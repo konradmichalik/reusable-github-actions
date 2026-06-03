@@ -12,13 +12,13 @@ jobs:
   cgl:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           fetch-depth: 0
 
       # Prepare environment
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2
         with:
           # @todo Use PHP 8.4 once PHP-CS-Fixer supports PHP 8.4
           php-version: ${{ inputs.php-version }}

@@ -21,7 +21,7 @@ jobs:
     name: Build extension artefact
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - name: Check tag
         run: |
@@ -30,7 +30,7 @@ jobs:
           fi
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2
         with:
           php-version: 8.4
           tools: composer:v2, typo3/tailor
@@ -45,7 +45,7 @@ jobs:
           php ~/.composer/vendor/bin/tailor create-artefact "${{ github.ref_name }}"
 
       - name: Upload extension artefact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: extension-artefact
           path: tailor-version-artefact/${{ env.EXTENSION_ARTEFACT }}
@@ -57,17 +57,17 @@ jobs:
     outputs:
       release-notes-url: ${{ steps.create-release.outputs.url }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - name: Download extension artefact
         id: download
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: extension-artefact
 
       - name: Create release
         id: create-release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           generate_release_notes: true
           files: ${{ steps.download.outputs.download-path }}/${{ env.EXTENSION_ARTEFACT }}
@@ -77,11 +77,11 @@ jobs:
     needs: [release]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - name: Download extension artefact
         id: download
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: extension-artefact
 
@@ -90,7 +90,7 @@ jobs:
         run: echo "comment=See release notes at ${{ needs.release.outputs.release-notes-url }}" >> $GITHUB_OUTPUT
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2
         with:
           php-version: 8.4
           extensions: intl, mbstring, json, zip, curl
