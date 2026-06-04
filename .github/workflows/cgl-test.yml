@@ -5,7 +5,7 @@ on:
     inputs:
       php-version:
         required: false
-        default: '8.3'
+        default: '8.2'
         type: string
 
 jobs:
