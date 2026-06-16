@@ -2,7 +2,7 @@
 
 # Reusable GitHub Actions
 
-[![License](https://img.shields.io/github/license/jackd248/reusable-github-actions)](LICENSE)
+[![License](https://img.shields.io/github/license/konradmichalik/reusable-github-actions)](LICENSE)
 [![Workflows](https://img.shields.io/badge/workflows-6-green)]()
 
 </div>
@@ -34,7 +34,7 @@ on:
 
 jobs:
     cgl:
-        uses: jackd248/reusable-github-actions/.github/workflows/cgl.yml@main
+        uses: konradmichalik/reusable-github-actions/.github/workflows/cgl.yml@main
 ```
 
 Input|Type| Required |Description
@@ -54,7 +54,7 @@ on:
 
 jobs:
     cgl:
-        uses: jackd248/reusable-github-actions/.github/workflows/cgl-test.yml@main
+        uses: konradmichalik/reusable-github-actions/.github/workflows/cgl-test.yml@main
 ```
 
 Input|Type| Required |Description
@@ -75,7 +75,7 @@ on:
 
 jobs:
     tests:
-        uses: jackd248/reusable-github-actions/.github/workflows/tests-php.yml@main
+        uses: konradmichalik/reusable-github-actions/.github/workflows/tests-php.yml@main
 ``` 
 
 Input|Type| Required |Description
@@ -97,7 +97,7 @@ on:
 
 jobs:
     tests:
-        uses: jackd248/reusable-github-actions/.github/workflows/tests-typo3.yml@main
+        uses: konradmichalik/reusable-github-actions/.github/workflows/tests-typo3.yml@main
 ```
 
 Input|Type| Required |Description
@@ -116,7 +116,7 @@ on:
 
 jobs:
     tests:
-        uses: jackd248/reusable-github-actions/.github/workflows/tests-typo3.yml@main
+        uses: konradmichalik/reusable-github-actions/.github/workflows/tests-typo3.yml@main
         with:
             php-versions: '["8.2", "8.3", "8.4"]'
             typo3-versions: '["11.5", "12.4", "13.4"]'
@@ -145,7 +145,7 @@ on:
 
 jobs:
   release:
-        uses: jackd248/reusable-github-actions/.github/workflows/release.yml@main
+        uses: konradmichalik/reusable-github-actions/.github/workflows/release.yml@main
 ```
 
 ## Release TYPO3
@@ -162,7 +162,7 @@ on:
 
 jobs:
   release:
-        uses: jackd248/reusable-github-actions/.github/workflows/release-typo3.yml@main
+        uses: konradmichalik/reusable-github-actions/.github/workflows/release-typo3.yml@main
         secrets:
           typo3-api-token: ${{ secrets.TYPO3_API_TOKEN }}
         with:
