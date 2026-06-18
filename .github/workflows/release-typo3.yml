@@ -21,7 +21,7 @@ jobs:
     name: Build extension artefact
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Check tag
         run: |
@@ -57,7 +57,7 @@ jobs:
     outputs:
       release-notes-url: ${{ steps.create-release.outputs.url }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Download extension artefact
         id: download
@@ -77,7 +77,7 @@ jobs:
     needs: [release]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Download extension artefact
         id: download
