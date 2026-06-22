@@ -45,6 +45,8 @@ jobs:
         run: composer-unused
 
       # Linting
+      - name: Refresh composer.lock hash
+        run: composer update --lock
       - name: Lint composer.json
         run: composer cgl lint:composer
       - name: Lint Editorconfig
