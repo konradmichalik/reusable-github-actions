@@ -43,7 +43,7 @@ jobs:
 
       - name: Install Composer dependencies
         if: ${{ inputs.vendor-bundling }}
-        run: composer install --no-progress
+        run: composer install --no-progress --no-scripts
 
       - name: Bundle vendor libraries
         if: ${{ inputs.vendor-bundling }}
@@ -52,7 +52,7 @@ jobs:
       - name: Stash bundled files
         if: ${{ inputs.vendor-bundling }}
         run: |
-          git add -f Resources/Private/Libs composer.json
+          git add -f Resources/Private/Libs
           git stash push -- composer.json Resources/Private/Libs
 
       - name: Reset files
