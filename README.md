@@ -172,6 +172,7 @@ jobs:
 Input|Type| Required |Description
 -|-|----------|-
 `typo3-extension-key`|input| true    |TYPO3 extension key (as used in TER and GitHub repository name).
+`vendor-bundling`|input| false    |Bundle non-TYPO3 vendor libraries for classic mode before packaging. Requires `eliashaeussler/typo3-vendor-bundler` in `require-dev` and a `bundle` composer script. Defaults to `false`.
 `typo3-api-token`|secret| true    |TYPO3 API token with permission to upload to TER.
 
 ## ⭐ License
