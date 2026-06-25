@@ -44,7 +44,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
-          tools: composer:v2
+          tools: composer:2.9
           coverage: pcov
 
       # Start MySQL service
@@ -80,7 +80,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.4
-          tools: composer:v2
+          tools: composer:2.9
           coverage: pcov
 
       # Start MySQL service
