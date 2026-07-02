@@ -4,6 +4,7 @@
 
 [![License](https://img.shields.io/github/license/konradmichalik/reusable-github-actions)](LICENSE)
 [![Workflows](https://img.shields.io/badge/workflows-8-green)]()
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/konradmichalik/reusable-github-actions/badge)](https://securityscorecards.dev/viewer/?uri=github.com/konradmichalik/reusable-github-actions)
 
 </div>
 
