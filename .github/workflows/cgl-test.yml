@@ -8,6 +8,9 @@ on:
         default: '8.2'
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   cgl:
     runs-on: ubuntu-latest
