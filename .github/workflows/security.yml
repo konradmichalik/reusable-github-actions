@@ -1,8 +1,12 @@
 name: Security
 
-# Secret scanning (gitleaks). gitleaks-action is free for public/personal
-# repositories, so no GITLEAKS_LICENSE is required here. Dual-trigger: runs on
-# this repo directly and is callable as a reusable workflow by consumers.
+# Secret scanning via the gitleaks CLI, invoked directly from its official
+# Docker image rather than the gitleaks/gitleaks-action wrapper. The wrapper
+# requires a paid GITLEAKS_LICENSE for any GitHub Organization (regardless of
+# repo visibility) — the underlying gitleaks scanner itself is fully open
+# source and free, so calling it directly avoids that paywall for org-owned
+# consumers of this reusable. Dual-trigger: runs on this repo directly and is
+# callable as a reusable workflow by consumers.
 
 on:
   workflow_call:
@@ -25,6 +29,6 @@ jobs:
           fetch-depth: 0
 
       - name: Run gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: docker://zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f # v8.30.1
+        with:
+          args: detect --source=/github/workspace --verbose --redact --exit-code=1
