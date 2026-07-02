@@ -21,6 +21,9 @@ env:
   TYPO3_EXCLUDE_FROM_PACKAGING: packaging_exclude.php
   EXTENSION_ARTEFACT: ${{ inputs.typo3-extension-key }}_${{ github.ref_name }}.zip
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Build extension artefact
@@ -77,6 +80,8 @@ jobs:
     name: Create release
     needs: [build]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # create GitHub release
     outputs:
       release-notes-url: ${{ steps.create-release.outputs.url }}
     steps:
