@@ -3,7 +3,7 @@
 # Reusable GitHub Actions
 
 [![License](https://img.shields.io/github/license/konradmichalik/reusable-github-actions)](LICENSE)
-[![Workflows](https://img.shields.io/badge/workflows-6-green)]()
+[![Workflows](https://img.shields.io/badge/workflows-8-green)]()
 
 </div>
 
@@ -20,6 +20,8 @@ This repository provides useful GitHub Action workflows.
 - [Tests TYPO3](#tests-typo3)
 - [Release](#release)
 - [Release TYPO3](#release-typo3)
+- [Security](#security)
+- [OpenSSF Scorecard](#openssf-scorecard)
 
 ## CGL
 
@@ -146,7 +148,12 @@ on:
 jobs:
   release:
         uses: konradmichalik/reusable-github-actions/.github/workflows/release.yml@main
+        permissions:
+          contents: write
 ```
+
+> [!NOTE]
+> The caller job must grant `contents: write` so the reusable can create the GitHub release. This is only required explicitly if the repository's default workflow token is set to read-only (recommended hardening).
 
 ## Release TYPO3
 
@@ -163,17 +170,68 @@ on:
 jobs:
   release:
         uses: konradmichalik/reusable-github-actions/.github/workflows/release-typo3.yml@main
+        permissions:
+          contents: write
         secrets:
           typo3-api-token: ${{ secrets.TYPO3_API_TOKEN }}
         with:
           typo3-extension-key: 'your_extension_key'
 ```
 
+> [!NOTE]
+> The caller job must grant `contents: write` so the reusable can create the GitHub release. This is only required explicitly if the repository's default workflow token is set to read-only (recommended hardening).
+
 Input|Type| Required |Description
 -|-|----------|-
 `typo3-extension-key`|input| true    |TYPO3 extension key (as used in TER and GitHub repository name).
 `vendor-bundling`|input| false    |Bundle non-TYPO3 vendor libraries for classic mode before packaging. Requires `eliashaeussler/typo3-vendor-bundler` in `require-dev` and a `bundle` composer script. Defaults to `false`.
 `typo3-api-token`|secret| true    |TYPO3 API token with permission to upload to TER.
+
+## Security
+
+Secret scanning via [gitleaks](https://github.com/gitleaks/gitleaks). Runs on pushes and pull requests and fails the job if secrets are detected. Free for public and personal repositories (no `GITLEAKS_LICENSE` required).
+
+```yaml
+name: Security
+on:
+  push:
+    branches:
+      - main
+  pull_request: ~
+
+jobs:
+  security:
+    uses: konradmichalik/reusable-github-actions/.github/workflows/security.yml@main
+    permissions:
+      contents: read
+```
+
+## OpenSSF Scorecard
+
+Supply-chain posture scoring via [OpenSSF Scorecard](https://github.com/ossf/scorecard) (branch protection, pinned actions, token permissions and more). Results are uploaded to the repository's code scanning dashboard.
+
+> [!NOTE]
+> Requires **Code Scanning** available (Settings → Advanced Security → Code scanning) for the SARIF upload — free on public repositories, needs GitHub Advanced Security on private ones. The published Scorecard badge requires a public repository.
+
+```yaml
+name: OpenSSF Scorecard
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+jobs:
+  scorecard:
+    uses: konradmichalik/reusable-github-actions/.github/workflows/scorecard.yml@main
+    permissions:
+      contents: read
+      security-events: write
+      id-token: write
+      actions: read
+```
 
 ## ⭐ License
 
