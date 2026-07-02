@@ -1,0 +1,44 @@
+name: OpenSSF Scorecard
+
+# Supply-chain posture scoring (branch protection, pinned actions, token
+# permissions, ...). Runs on default-branch push and weekly; results upload to
+# the code-scanning dashboard and publish the public Scorecard badge.
+# Dual-trigger: runs on this repo directly and is callable as a reusable
+# workflow by consumers (which supply their own push/schedule triggers).
+
+on:
+  workflow_call:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  scorecard:
+    name: Scorecard analysis
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # upload SARIF to code-scanning
+      id-token: write # publish results to OpenSSF
+      actions: read # read workflow run data for checks
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Run analysis
+        uses: ossf/scorecard-action@v2
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif

@@ -1,0 +1,30 @@
+name: Security
+
+# Secret scanning (gitleaks). gitleaks-action is free for public/personal
+# repositories, so no GITLEAKS_LICENSE is required here. Dual-trigger: runs on
+# this repo directly and is callable as a reusable workflow by consumers.
+
+on:
+  workflow_call:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  gitleaks:
+    name: Secret scanning
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
