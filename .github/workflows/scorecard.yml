@@ -20,6 +20,16 @@ jobs:
   scorecard:
     name: Scorecard analysis
     runs-on: ubuntu-latest
+    # scorecard-action only supports the default branch and hard-fails on any
+    # other ref ("only default branch is supported"). A careless caller trigger
+    # (e.g. push: branches: ['**']) would otherwise put a guaranteed-red check
+    # on every feature-branch push. Skip cleanly (neutral, not failed) unless we
+    # are on the default branch, a schedule, or a manual dispatch. The github
+    # context here is the caller's, so default_branch resolves to the caller repo.
+    if: >-
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      github.ref_name == github.event.repository.default_branch
     permissions:
       contents: read
       security-events: write # upload SARIF to code-scanning
