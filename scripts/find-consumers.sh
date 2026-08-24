@@ -34,11 +34,11 @@ reference_pattern='(konradmichalik|jackd248)/reusable-github-actions'
 
 # Throwaway repositories that intentionally reference this project without
 # being real consumers: the canary (issue #48, always on @main by design)
-# and any scratch spike repository (issue #37 and future spikes). Pinning
-# these would be wrong on two counts: the canary's whole purpose is to stay
-# unpinned, and spike repositories are meant to be archived or deleted, not
-# tracked as ongoing consumers.
-excluded_repos='reusable-github-actions-canary spike-uses-resolution'
+# and any scratch spike repository (issue #37, #43 and future spikes).
+# Pinning these would be wrong on two counts: the canary's whole purpose is
+# to stay unpinned, and spike repositories are meant to be archived or
+# deleted, not tracked as ongoing consumers.
+excluded_repos='reusable-github-actions-canary spike-uses-resolution spike-pages-workflow'
 
 is_excluded() {
   for excluded in $excluded_repos; do
