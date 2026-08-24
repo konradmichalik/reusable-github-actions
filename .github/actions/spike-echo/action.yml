@@ -8,4 +8,4 @@ runs:
   using: composite
   steps:
     - shell: bash
-      run: echo "SPIKE-MARKER: definer-repo (konradmichalik/reusable-github-actions)"
+      run: 'echo "SPIKE-MARKER: definer-repo (konradmichalik/reusable-github-actions)"'
