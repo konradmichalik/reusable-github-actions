@@ -1,0 +1,11 @@
+name: spike-echo
+description: >-
+  Throwaway action for issue #37. Prints a marker identifying which
+  repository's copy of this action executed. Deleted once the spike
+  concludes.
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: echo "SPIKE-MARKER: definer-repo (konradmichalik/reusable-github-actions)"

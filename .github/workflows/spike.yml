@@ -1,0 +1,29 @@
+name: Spike (issue #37)
+
+# Throwaway workflow to determine whether a relative `uses: ./...` reference
+# inside a reusable workflow resolves against this repository (the definer)
+# or against the caller's repository. Deleted once the spike concludes.
+
+on:
+  workflow_call:
+
+permissions: {}
+
+jobs:
+  spike-step:
+    name: Direct step reference
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: ./.github/actions/spike-echo
+
+  spike-nested:
+    name: Nested action-to-action reference
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: ./.github/actions/spike-wrapper
