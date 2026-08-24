@@ -41,7 +41,12 @@ jobs:
       - name: Check dependencies
         run: composer-require-checker check
       - name: Reset composer.json
-        run: git checkout composer.json $(git ls-files --error-unmatch composer.lock >/dev/null 2>&1 && echo composer.lock)
+        run: |
+          if git ls-files --error-unmatch composer.lock >/dev/null 2>&1; then
+            git checkout composer.json composer.lock
+          else
+            git checkout composer.json
+          fi
       - name: Re-install Composer dependencies
         uses: ramsey/composer-install@v4
       - name: Check for unused dependencies
