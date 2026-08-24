@@ -120,7 +120,7 @@ jobs:
 
       - name: Set release comment
         id: get-comment
-        run: echo "comment=See release notes at ${{ needs.release.outputs.release-notes-url }}" >> $GITHUB_OUTPUT
+        run: echo "comment=See release notes at ${{ needs.release.outputs.release-notes-url }}" >> "$GITHUB_OUTPUT"
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
