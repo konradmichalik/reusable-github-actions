@@ -1,0 +1,64 @@
+# Every ignore below silences a real, currently-open finding that is already
+# tracked in its own issue. None of these are dismissed as non-issues: fixing
+# them means changing behaviour for every consumer of the affected workflow,
+# and issue #47 deliberately sequences all consumer-visible changes behind a
+# freeze tag rather than letting them land one at a time on `main`. As each
+# tracked issue lands, remove its entry here so this file always reflects
+# what is genuinely still open, not a permanent allowlist.
+
+rules:
+  unpinned-uses:
+    ignore:
+      # Third-party actions pinned to a mutable tag instead of a commit SHA.
+      # Tracked in #32.
+      - cgl-test.yml
+      - cgl.yml
+      - release-typo3.yml
+      - release.yml
+      - scorecard.yml
+      - security.yml
+      - tests-php.yml
+      - tests-typo3.yml
+      - tests.yml
+
+  artipacked:
+    ignore:
+      # `actions/checkout` without `persist-credentials: false`. Tracked in
+      # #41, which adds this repository-wide as part of the permissions
+      # baseline.
+      - cgl-test.yml
+      - cgl.yml
+      - release-typo3.yml
+      - release.yml
+      - security.yml
+      - tests-php.yml
+      - tests-typo3.yml
+      - tests.yml
+
+  template-injection:
+    ignore:
+      # `${{ }}` expressions interpolated directly into a `run:` block
+      # instead of being passed through `env:`. Tracked in #31.
+      - release.yml
+      - release-typo3.yml
+
+  archived-uses:
+    ignore:
+      # `paambaati/codeclimate-action` is archived upstream (confirmed via
+      # the GitHub API, last push 2025-07-23). Tracked in #28, which already
+      # covers this workflow's CodeClimate step for an unrelated reason (the
+      # secret it depends on was never actually wired up) and needs to
+      # additionally decide whether to keep, replace, or drop CodeClimate
+      # reporting given the upstream action will not receive further fixes.
+      - tests-php.yml
+      - tests-typo3.yml
+      - tests.yml
+
+  superfluous-actions:
+    ignore:
+      # `softprops/action-gh-release` duplicates what the `gh` CLI already
+      # does and that CLI is preinstalled on GitHub-hosted runners. Genuine
+      # simplification, but a behaviour-adjacent change to a release
+      # workflow, so it is not scheduled rather than silently taken.
+      - release.yml:30
+      - release-typo3.yml:103
