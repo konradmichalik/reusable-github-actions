@@ -33,7 +33,8 @@ on:
         description: >-
           Optional newline-separated "source destination" pairs, copied into
           the build output after the build script runs and before upload.
-          Each pair becomes `cp -r source destination`.
+          Each destination is relative to `output-dir`: a pair `src dest`
+          becomes `cp -r src <output-dir>/dest`.
         required: false
         default: ''
         type: string
@@ -64,6 +65,7 @@ jobs:
           cache: npm
 
       - name: Setup Pages
+        id: pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
 
       - name: Install dependencies
@@ -74,16 +76,25 @@ jobs:
       - name: Build docs
         env:
           BUILD_SCRIPT: ${{ inputs.build-script }}
+          # VitePress does not auto-detect a Pages project site's sub-path
+          # the way configure-pages does for some other frameworks. On a
+          # project site (not a custom domain or user/org root site), the
+          # build needs to know it. Read this in docs/.vitepress/config.*
+          # as `base: process.env.PAGES_BASE_PATH || '/'` if the site is not
+          # already served from the domain root.
+          PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
         run: npm run "$BUILD_SCRIPT"
 
       - name: Copy additional paths into the build output
         if: inputs.copy-paths != ''
         env:
           COPY_PATHS: ${{ inputs.copy-paths }}
+          OUTPUT_DIR: ${{ inputs.output-dir }}
         run: |
           while read -r src dest; do
             [ -z "$src" ] && continue
-            cp -r "$src" "$dest"
+            mkdir -p "$OUTPUT_DIR/$(dirname "$dest")"
+            cp -r -- "$src" "$OUTPUT_DIR/$dest"
           done <<< "$COPY_PATHS"
 
       - name: Upload artifact
