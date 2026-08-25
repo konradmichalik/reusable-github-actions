@@ -35,7 +35,7 @@ on:
   pull_request: ~
 ```
 
-**Not** `push: branches: ['**']`. That pattern, seen across several consumers of this layer, runs the full matrix on every push to every branch, and then a *second* time when a pull request from that branch is opened or updated — the pull request event and the branch-push event both fire, both trigger the workflow, both run the same commit. For a workflow with an 18-job matrix, that is 18 duplicate jobs on every PR update, paid for nothing: the two runs check the identical code.
+**Not** `push` with `branches: ['**']`. That pattern, seen across several consumers of this layer, runs the full matrix on every push to every branch, and then a *second* time when a pull request from that branch is opened or updated: the branch-push event and the pull request event both fire and both trigger the workflow. They don't run the literal same commit — `push` runs the commit as pushed, `pull_request` runs GitHub's synthetic merge of it into the target branch — but for a feature branch with no conflicting changes on the target, that difference rarely matters in practice, and the two runs are overlapping validation of the same branch update, paid for twice. For a workflow with an 18-job matrix, that is 18 duplicate jobs on every PR update.
 
 `push: [main]` plus `pull_request` avoids the duplication: feature-branch work is validated once, by the pull request event; `main` itself is validated on every push to it (merges, direct commits). This is also why [OpenSSF Scorecard](#openssf-scorecard) needs its own, different trigger below — its guard exists specifically because `push: ['**']` would otherwise add a guaranteed-red check to every feature branch.
 
