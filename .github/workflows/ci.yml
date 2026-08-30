@@ -66,3 +66,44 @@ jobs:
           else
             echo "no scripts/*.sh yet, nothing to check"
           fi
+
+  check-action-pins:
+    name: check-action-pins
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      # A floating tag (e.g. @v7) can be moved to point at different code
+      # after review. A full 40-character commit SHA cannot. Docker digest
+      # refs (@sha256:...) and local reusable-workflow paths (./...) are
+      # already content-addressed or repo-local and are exempt.
+      - name: Check that all actions are pinned to a full commit SHA
+        run: |
+          set -euo pipefail
+          status=0
+          for file in .github/workflows/*.yml; do
+            while IFS= read -r line; do
+              ref=$(printf '%s\n' "$line" | grep -oE 'uses:[[:space:]]*[^[:space:]]+' | sed -E 's/uses:[[:space:]]*//')
+              [ -z "$ref" ] && continue
+              case "$ref" in
+                ./*) continue ;;
+              esac
+              pin="${ref##*@}"
+              if [ "$pin" = "$ref" ]; then
+                continue
+              fi
+              case "$pin" in
+                sha256:*) continue ;;
+              esac
+              if ! [[ "$pin" =~ ^[0-9a-f]{40}$ ]]; then
+                echo "::error file=${file}::Action not pinned to a full commit SHA: ${ref}"
+                status=1
+              fi
+            done < <(grep -E '(^|[[:space:]])uses:[[:space:]]*' "$file")
+          done
+          exit "$status"
