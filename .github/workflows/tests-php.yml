@@ -14,13 +14,14 @@ on:
         default: '["highest", "lowest"]'
         type: string
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   tests:
     name: Tests (PHP ${{ matrix.php-version }} & ${{ matrix.dependencies }} dependencies)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -29,6 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       # Prepare environment
@@ -52,9 +54,12 @@ jobs:
   coverage:
     name: Test coverage
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       # Prepare environment
@@ -89,10 +94,13 @@ jobs:
   coverage-report:
     name: Report test coverage
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs: coverage
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       # Download artifact

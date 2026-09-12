@@ -20,13 +20,14 @@ on:
         default: '["highest", "lowest"]'
         type: string
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   tests:
     name: PHP ${{ matrix.php-version }}, TYPO3 ${{ matrix.typo3-version }} & ${{ matrix.dependencies }} dependencies
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -41,6 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       # Prepare environment
@@ -69,6 +71,8 @@ jobs:
   test-coverage:
     name: Test coverage
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     env:
       typo3DatabaseName: typo3
       typo3DatabaseHost: '127.0.0.1'
@@ -77,6 +81,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       # Prepare environment
@@ -114,9 +119,12 @@ jobs:
     name: Report test coverage
     needs: test-coverage
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       # Download artifact

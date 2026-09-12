@@ -7,20 +7,6 @@
 # what is genuinely still open, not a permanent allowlist.
 
 rules:
-  artipacked:
-    ignore:
-      # `actions/checkout` without `persist-credentials: false`. Tracked in
-      # #41, which adds this repository-wide as part of the permissions
-      # baseline.
-      - cgl-test.yml
-      - cgl.yml
-      - release-typo3.yml
-      - release.yml
-      - security.yml
-      - tests-php.yml
-      - tests-typo3.yml
-      - tests.yml
-
   archived-uses:
     ignore:
       # `paambaati/codeclimate-action` is archived upstream (confirmed via
