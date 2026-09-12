@@ -85,7 +85,7 @@ Input|Type| Required |Description
 
 ## Tests
 
-Matrix testing workflow that runs tests across multiple PHP versions with both highest and lowest dependencies. Includes optional coverage reporting to CodeClimate and Coveralls.
+Matrix testing workflow that runs tests across multiple PHP versions with both highest and lowest dependencies. Includes coverage reporting to Coveralls.
 
 ```yaml
 name: Tests
@@ -106,7 +106,7 @@ Input|Type| Required |Description
 
 ## Tests TYPO3
 
-Matrix testing workflow that runs tests across multiple PHP and TYPO3 versions with both highest and lowest dependencies. Includes optional coverage reporting to CodeClimate and Coveralls.
+Matrix testing workflow that runs tests across multiple PHP and TYPO3 versions with both highest and lowest dependencies. Includes coverage reporting to Coveralls.
 
 ```yaml
 name: Tests
@@ -144,13 +144,19 @@ jobs:
             dependencies: '["highest", "lowest"]'
 ```
 
-### Optional Coverage Reporting
+### Coverage Reporting
 
-The Tests workflow includes optional coverage reporting to external services:
+Coverage goes to [Coveralls](https://coveralls.io) and nowhere else. The caller
+configures nothing: the workflow uploads the `clover.xml` that the consumer's own
+`test:coverage` composer script produces.
 
-- **CodeClimate**: Set `CC_TEST_REPORTER_ID` secret to enable
-
-If these secrets are not configured, the coverage steps will be skipped without causing workflow failures.
+> [!NOTE]
+> CodeClimate reporting used to be listed here as an option enabled by a
+> `CC_TEST_REPORTER_ID` secret. It never actually ran — the secret was never
+> declared in the reusable workflows, so it never reached them — and it could not
+> run today regardless: Code Climate's coverage API was shut down on 2025-07-18 and
+> the product moved to Qlty. The step has been removed. If you set that secret on a
+> repository, it is inert and can be deleted.
 
 ## Release
 

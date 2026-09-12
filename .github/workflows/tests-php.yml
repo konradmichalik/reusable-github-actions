@@ -110,16 +110,6 @@ jobs:
         with:
           name: coverage
 
-      # CodeClimate
-      - name: CodeClimate report
-        uses: paambaati/codeclimate-action@f429536ee076d758a24705203199548125a28ca7 # v9.0.0
-        if: env.CC_TEST_REPORTER_ID
-        env:
-          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
-        with:
-          coverageLocations: |
-            ${{ steps.download.outputs.download-path }}/clover.xml:clover
-
       # Coveralls
       - name: Coveralls report
         uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
