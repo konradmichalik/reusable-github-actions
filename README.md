@@ -298,6 +298,17 @@ Supply-chain posture scoring via [OpenSSF Scorecard](https://github.com/ossf/sco
 > [!NOTE]
 > Requires **Code Scanning** available (Settings → Advanced Security → Code scanning) for the SARIF upload — free on public repositories, needs GitHub Advanced Security on private ones. The published Scorecard badge requires a public repository.
 
+Input|Type| Required |Description
+-|-|----------|-
+`publish-results`|input| false    |Publish results to the public OpenSSF endpoint and badge. Defaults to `true`, and is ignored on private repositories.
+
+Publishing is decided by repository visibility first: a **private** repository never
+publishes, because doing so would push its supply-chain posture to a public endpoint
+and the run fails outright when it tries. The scoring itself and the SARIF upload to
+code scanning still happen, so a private repository gets the analysis without the
+disclosure. Set `publish-results: false` to opt a *public* repository out of the
+badge as well.
+
 > [!IMPORTANT]
 > Trigger this workflow **only on the default branch**, on a schedule, and via manual dispatch — as shown below. The `scorecard-action` supports the default branch only and hard-fails on any other ref, so a wildcard trigger such as `push: branches: ['**']` would add a guaranteed-red check to every feature-branch push. The reusable now skips itself (neutral, not failed) on non-default branches as a safety net, but using the recommended trigger avoids the unnecessary runs entirely.
 

@@ -8,6 +8,12 @@ name: OpenSSF Scorecard
 
 on:
   workflow_call:
+    inputs:
+      publish-results:
+        description: 'Publish results to the public OpenSSF endpoint and badge. Has no effect on a private repository, which can never publish'
+        required: false
+        default: true
+        type: boolean
   push:
     branches: [main]
   schedule:
@@ -33,6 +39,10 @@ jobs:
     permissions:
       contents: read
       security-events: write # upload SARIF to code-scanning
+      # Only used when publishing, which a private repository never does. Job
+      # permissions cannot take an expression, so making this conditional would
+      # mean duplicating the whole job behind two mutually exclusive `if:`s. Not
+      # worth it: unused, the grant only permits minting an OIDC token no step asks for.
       id-token: write # publish results to OpenSSF
       actions: read # read workflow run data for checks
     steps:
@@ -46,7 +56,16 @@ jobs:
         with:
           results_file: results.sarif
           results_format: sarif
-          publish_results: true
+          # Publishing pushes the repository's supply-chain posture to a public
+          # OpenSSF endpoint and produces a public badge. For a private repository
+          # that both fails the run and would be a disclosure if it did not, so
+          # visibility decides this and the input can only narrow it further.
+          # Written as `private == false` rather than `!private` on purpose: if the
+          # field is ever absent the expression yields false, which fails safe
+          # (a stale badge) instead of publishing from a repository we could not
+          # confirm is public. `inputs` is empty on this repository's own push and
+          # schedule triggers, hence the null check.
+          publish_results: ${{ (inputs.publish-results == null || inputs.publish-results) && github.event.repository.private == false }}
 
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
