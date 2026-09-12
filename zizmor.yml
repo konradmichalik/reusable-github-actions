@@ -39,5 +39,11 @@ rules:
       # does and that CLI is preinstalled on GitHub-hosted runners. Genuine
       # simplification, but a behaviour-adjacent change to a release
       # workflow, so it is not scheduled rather than silently taken.
-      - release.yml:30
-      - release-typo3.yml:103
+      #
+      # Deliberately not line-anchored. These were `release.yml:30` and
+      # `release-typo3.yml:103` until adding an `env:` block above each step
+      # shifted both, and a stale anchor does not warn, it just stops
+      # matching. Each file uses this action exactly once, so scoping to the
+      # file is equivalent and does not rot.
+      - release.yml
+      - release-typo3.yml
