@@ -7,20 +7,6 @@
 # what is genuinely still open, not a permanent allowlist.
 
 rules:
-  unpinned-uses:
-    ignore:
-      # Third-party actions pinned to a mutable tag instead of a commit SHA.
-      # Tracked in #32.
-      - cgl-test.yml
-      - cgl.yml
-      - release-typo3.yml
-      - release.yml
-      - scorecard.yml
-      - security.yml
-      - tests-php.yml
-      - tests-typo3.yml
-      - tests.yml
-
   artipacked:
     ignore:
       # `actions/checkout` without `persist-credentials: false`. Tracked in
@@ -34,13 +20,6 @@ rules:
       - tests-php.yml
       - tests-typo3.yml
       - tests.yml
-
-  template-injection:
-    ignore:
-      # `${{ }}` expressions interpolated directly into a `run:` block
-      # instead of being passed through `env:`. Tracked in #31.
-      - release.yml
-      - release-typo3.yml
 
   archived-uses:
     ignore:
