@@ -7,18 +7,6 @@
 # what is genuinely still open, not a permanent allowlist.
 
 rules:
-  archived-uses:
-    ignore:
-      # `paambaati/codeclimate-action` is archived upstream (confirmed via
-      # the GitHub API, last push 2025-07-23). Tracked in #28, which already
-      # covers this workflow's CodeClimate step for an unrelated reason (the
-      # secret it depends on was never actually wired up) and needs to
-      # additionally decide whether to keep, replace, or drop CodeClimate
-      # reporting given the upstream action will not receive further fixes.
-      - tests-php.yml
-      - tests-typo3.yml
-      - tests.yml
-
   superfluous-actions:
     ignore:
       # `softprops/action-gh-release` duplicates what the `gh` CLI already
