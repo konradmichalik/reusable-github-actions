@@ -75,6 +75,20 @@ workflow more than once from a single caller matrix, a group defined inside it w
 be identical for every call — and they would cancel or queue each other. Only the
 caller can build a group that includes the matrix key.
 
+For the same reason, the groups the other workflows define include their **own** name,
+not just caller context:
+
+```yaml
+group: ${{ github.workflow }}-cgl-${{ github.ref }}
+```
+
+Without that discriminator, a caller invoking `cgl.yml`, `cgl-test.yml` and
+`security.yml` from one workflow file gives all three an identical group — because
+`github.workflow` and `github.ref` are the caller's, and a reusable workflow has no
+expression that identifies which callee it is. With `cancel-in-progress: true` they
+then cancel each other. This is not hypothetical: it happened on the canary the first
+time these blocks shipped.
+
 ## CGL
 
 Comprehensive code quality workflow that validates composer dependencies, runs linting (PHP, composer.json, editorconfig), performs static code analysis and checks rector migrations.
