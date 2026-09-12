@@ -13,6 +13,23 @@ This repository provides useful GitHub Action workflows.
 > [!IMPORTANT]
 > This package is intended for use in my personal projects only. It is not designed for general use.
 
+## Scope
+
+**These workflows target PHP projects** — TYPO3 extensions, PHP libraries and PHP CLI
+tools. That is the boundary, and it is deliberate rather than incidental: the quality,
+testing and release workflows here all assume Composer, PHPUnit and the PHP toolchain.
+
+Two consequences worth stating plainly, so nobody has to infer them:
+
+- **No JavaScript-specific workflows will be added.** A project whose checks are
+  `eslint` and `stylelint` is not served here and should not wait for it. npm appears
+  only where it is a *build step inside* a PHP package — several TYPO3 extensions build
+  frontend assets — not as a project type of its own.
+- **`release.yml` is the exception, and stays usable.** It contains no PHP: it validates
+  a tag and creates a GitHub release. Anything that tags can call it, and two
+  JavaScript-only repositories already do. That is fine and is not an accident to be
+  cleaned up.
+
 ## 🧩 Workflows
 
 - [CGL](#cgl)
