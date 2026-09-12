@@ -43,6 +43,37 @@ on:
 
 The concept behind this repository claimed the convention change "removes the need for a preparation workflow entirely". That does not hold up: the one real reference implementation of a `preparation` workflow found in a comparable third-party layer exists to gate execution on fork pull requests where secrets are unavailable, not to deduplicate push-vs-PR runs, and is unrelated to this convention. Independent of that, no workflow inside *this* repository could ever fix caller-side event duplication regardless of its design: GitHub evaluates a caller's own trigger conditions, and therefore whether a run happens at all, before any `uses:` reference in that caller is even resolved. The fix has to happen in the caller's `on:` block, which is exactly what this convention is.
 
+## Concurrency
+
+Most workflows cancel their own superseded runs, so you do not need a `concurrency`
+block in the caller:
+
+| Workflow | Handled by | Cancels superseded runs |
+|---|---|---|
+| `cgl.yml`, `cgl-test.yml` | the workflow | yes |
+| `security.yml` | the workflow | yes |
+| `scorecard.yml` | the workflow | no — a run publishes to the OpenSSF results API |
+| `release.yml`, `release-typo3.yml` | the workflow | no — see below |
+| `tests-php.yml`, `tests-typo3.yml`, `tests.yml` | **the caller** | up to you |
+
+Releases are never cancelled mid-flight. `release-typo3.yml` spreads artefact build,
+GitHub release and `tailor ter:publish` across three jobs, and a cancellation between
+them leaves a version published to TER with no GitHub release, or the reverse.
+
+The three **test workflows deliberately do not manage concurrency**, and this is the
+one case where you should set it yourself:
+
+```yaml
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+```
+
+A reusable workflow cannot see its caller's matrix values, so if you ever call a test
+workflow more than once from a single caller matrix, a group defined inside it would
+be identical for every call — and they would cancel or queue each other. Only the
+caller can build a group that includes the matrix key.
+
 ## CGL
 
 Comprehensive code quality workflow that validates composer dependencies, runs linting (PHP, composer.json, editorconfig), performs static code analysis and checks rector migrations.

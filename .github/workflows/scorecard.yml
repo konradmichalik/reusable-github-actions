@@ -22,10 +22,17 @@ on:
 
 permissions: {}
 
+# Not cancelled: a run publishes to the OpenSSF results API, and interrupting
+# that is worse than letting a redundant run finish.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   scorecard:
     name: Scorecard analysis
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     # scorecard-action only supports the default branch and hard-fails on any
     # other ref ("only default branch is supported"). A careless caller trigger
     # (e.g. push: branches: ['**']) would otherwise put a guaranteed-red check
