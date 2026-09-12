@@ -24,6 +24,25 @@ This repository provides useful GitHub Action workflows.
 - [Security](#security)
 - [OpenSSF Scorecard](#openssf-scorecard)
 
+## Caller trigger convention
+
+Trigger CI-style workflows (`cgl.yml`, `cgl-test.yml`, `tests-php.yml`, `tests-typo3.yml`, `security.yml`) with:
+
+```yaml
+on:
+  push:
+    branches: [main]
+  pull_request: ~
+```
+
+**Not** `push` with `branches: ['**']`. That pattern, seen across several consumers of this layer, runs the full matrix on every push to every branch, and then a *second* time when a pull request from that branch is opened or updated: the branch-push event and the pull request event both fire and both trigger the workflow. They don't run the literal same commit — `push` runs the commit as pushed, `pull_request` runs GitHub's synthetic merge of it into the target branch — but for a feature branch with no conflicting changes on the target, that difference rarely matters in practice, and the two runs are overlapping validation of the same branch update, paid for twice. For a workflow with an 18-job matrix, that is 18 duplicate jobs on every PR update.
+
+`push: [main]` plus `pull_request` avoids the duplication: feature-branch work is validated once, by the pull request event; `main` itself is validated on every push to it (merges, direct commits). This is also why [OpenSSF Scorecard](#openssf-scorecard) needs its own, different trigger below — its guard exists specifically because `push: ['**']` would otherwise add a guaranteed-red check to every feature branch.
+
+**Verified, not assumed:** none of this layer's 39 consumers has a branch protection rule or ruleset that depends on a check running on a direct push to a non-default branch. The one consumer with a `required_status_checks` rule (`move-elevator/typo3-login-warning`, gating `cgl / cgl`) requires it on the `pull_request` event, which this convention still provides — switching away from `push: ['**']` does not remove that check, only the redundant duplicate of it. Rulesets are unavailable on private repositories on the free plan, which by itself already rules out branch-scoped protection rules for four of the 39.
+
+The concept behind this repository claimed the convention change "removes the need for a preparation workflow entirely". That does not hold up: the one real reference implementation of a `preparation` workflow found in a comparable third-party layer exists to gate execution on fork pull requests where secrets are unavailable, not to deduplicate push-vs-PR runs, and is unrelated to this convention. Independent of that, no workflow inside *this* repository could ever fix caller-side event duplication regardless of its design: GitHub evaluates a caller's own trigger conditions, and therefore whether a run happens at all, before any `uses:` reference in that caller is even resolved. The fix has to happen in the caller's `on:` block, which is exactly what this convention is.
+
 ## CGL
 
 Comprehensive code quality workflow that validates composer dependencies, runs linting (PHP, composer.json, editorconfig), performs static code analysis and checks rector migrations.
@@ -32,8 +51,8 @@ Comprehensive code quality workflow that validates composer dependencies, runs l
 name: CGL
 on:
   push:
-    branches:
-      - '**'
+    branches: [main]
+  pull_request: ~
 
 jobs:
     cgl:
@@ -52,8 +71,8 @@ Comprehensive code quality workflow that validates composer dependencies, runs l
 name: CGL
 on:
   push:
-    branches:
-      - '**'
+    branches: [main]
+  pull_request: ~
 
 jobs:
     cgl:
@@ -72,14 +91,13 @@ Matrix testing workflow that runs tests across multiple PHP versions with both h
 name: Tests
 on:
   push:
-    branches:
-      - '**'
-        
+    branches: [main]
+  pull_request: ~
 
 jobs:
     tests:
         uses: konradmichalik/reusable-github-actions/.github/workflows/tests-php.yml@main
-``` 
+```
 
 Input|Type| Required |Description
 -|-|----------|-
@@ -95,8 +113,8 @@ name: Tests
 
 on:
   push:
-    branches:
-      - '**'
+    branches: [main]
+  pull_request: ~
 
 jobs:
     tests:
@@ -114,8 +132,8 @@ name: Tests
 
 on:
   push:
-    branches:
-      - '**'
+    branches: [main]
+  pull_request: ~
 
 jobs:
     tests:
