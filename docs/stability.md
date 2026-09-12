@@ -84,10 +84,62 @@ The standing procedure for any release that contains a breaking change, not only
 1. **Freeze.** Tag the current `main` as a marker release with **no functional change** — a pure freeze point, not a real release
 2. **Pin.** Every known consumer gets pinned to the freeze tag's resolved commit SHA (`scripts/find-consumers.sh` produces the list, `scripts/pin-references.sh` resolves the tag and performs the pin — per the pinning contract above, what actually lands in a consumer's `uses:` line is the SHA, with the tag only as a trailing comment). From this point, nothing that happens on `main` reaches anyone
 3. **Change.** The breaking work happens and merges to `main`, behind the freeze, with nobody watching it happen because nobody is exposed to it
-4. **Release.** Tag the real release. The release notes name every consumer-visible behaviour change explicitly — not "see changelog", an actual list, because that list is the thing a consumer bumping their pin needs to decide whether now is a good time
-5. **Bump, deliberately.** Consumers are re-pinned from the freeze tag's SHA to the release tag's SHA, one at a time, starting with whatever this repository's own canary is at the time (`docs/canary.md`), not all at once and not automatically. Automated bumps (Renovate) take over only after this first deliberate bump confirms the release is sound
+4. **Rewrite internal references.** Every `uses:` inside this repository that points at this repository is set to the version about to be released, and that commit is what gets tagged. See Internal references below
+5. **Release.** Tag the real release, on the commit from step 4. The release notes name every consumer-visible behaviour change explicitly — not "see changelog", an actual list, because that list is the thing a consumer bumping their pin needs to decide whether now is a good time
+6. **Bump, deliberately.** Consumers are re-pinned from the freeze tag's SHA to the release tag's SHA, one at a time, starting with whatever this repository's own canary is at the time (`docs/canary.md`), not all at once and not automatically. Automated bumps (Renovate) take over only after this first deliberate bump confirms the release is sound
 
 Steps 1 and 2 cost one extra tag and one extra pin sweep over doing this in a single pass. That is the price of never letting a consumer see an in-progress breaking change; see the milestone that first used this procedure for the reasoning in full.
+
+## Internal references
+
+Once this repository contains composite actions, its own workflows and actions refer
+to each other. Those references cannot be relative: a step-level `uses: ./...`
+resolves against the **caller's** checkout, and silently runs the caller's file if one
+exists at that path. Verified in [`actions.md`](actions.md); enforced by the
+`check-relative-uses` job.
+
+So they are fully qualified — and, unlike a consumer's pin, they name **the tag, not
+the commit SHA**:
+
+```yaml
+uses: konradmichalik/reusable-github-actions/.github/actions/setup-php@0.2.0
+```
+
+### Why a tag here and a SHA there
+
+It looks like a contradiction of the pinning rule and is not. That rule exists because
+a *foreign* project can move a tag out from under you. These tags are this project's
+own, and this document already forbids moving them. Pinning inward to a tag nobody
+else can move is a different risk from trusting one you do not control.
+
+It also resolves a bootstrap problem that has no clean answer otherwise: a reference
+must name a version, but the version's commit does not exist until the reference is
+written. A tag can be created *after* the commit that names it, so writing `@0.2.0`,
+committing, and tagging that commit `0.2.0` is self-consistent. Pinning inward by SHA
+would require either two tags per release or a tag that moves — and this document does
+not permit the second.
+
+### The cost, stated rather than discovered
+
+**Between releases, `main` runs the previous release's actions.** The references on
+`main` name the last tag, so a change to an action is not exercised by anything —
+including the canary, which tracks `@main` — until the next release is tagged.
+
+That is the price of the arrangement and it is accepted, not overlooked. It means an
+action change is verified at release time rather than at merge time, so the canary run
+that follows a tag carries more weight than it does today. Treat a release that
+changed an action as a release that has not been tested yet.
+
+The alternatives were worse: two tags per release makes the history unreadable, and
+leaving the references on the previous version permanently means the layer never runs
+its own current code at all.
+
+### One thing to watch
+
+Renovate reads these as ordinary references and will offer to bump them, since they
+point at this repository's own releases. Right after a release that is a no-op; between
+releases it proposes exactly what step 4 would do anyway. It has not been observed yet
+— when the first bump arrives, check whether it helps or just makes noise.
 
 ## What a breaking change looks like, from a consumer's side
 
