@@ -104,6 +104,10 @@ jobs:
                 echo "::error file=${file}::Action not pinned to a full commit SHA: ${ref}"
                 status=1
               fi
-            done < <(grep -E '(^|[[:space:]])uses:[[:space:]]*' "$file")
+            # Anchored to an actual YAML key (optional list dash, then `uses:`)
+            # rather than `uses:` anywhere on the line. Unanchored, any prose that
+            # happens to contain the word — a deprecation notice quoting a caller
+            # snippet, for instance — was reported as an unpinned action.
+            done < <(grep -E '^[[:space:]]*-?[[:space:]]*uses:[[:space:]]*' "$file")
           done
           exit "$status"

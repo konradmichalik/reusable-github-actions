@@ -19,6 +19,7 @@ This repository provides useful GitHub Action workflows.
 - [CGL (Test)](#cgl-test)
 - [Tests](#tests)
 - [Tests TYPO3](#tests-typo3)
+- [Tests (deprecated)](#tests-deprecated)
 - [Release](#release)
 - [Release TYPO3](#release-typo3)
 - [Security](#security)
@@ -248,6 +249,28 @@ contribution red.
 > run today regardless: Code Climate's coverage API was shut down on 2025-07-18 and
 > the product moved to Qlty. The step has been removed. If you set that secret on a
 > repository, it is inert and can be deleted.
+
+## Tests (deprecated)
+
+> [!WARNING]
+> `tests.yml` is **deprecated** and will be **removed in 0.3.0**. It is superseded by
+> [Tests TYPO3](#tests-typo3). It is documented here only so its remaining callers can
+> find the migration path — do not adopt it for anything new.
+
+Migration is a one-line change in your caller:
+
+```diff
+ jobs:
+     tests:
+-        uses: konradmichalik/reusable-github-actions/.github/workflows/tests.yml@<ref>
++        uses: konradmichalik/reusable-github-actions/.github/workflows/tests-typo3.yml@<ref>
+```
+
+Nothing else changes. The two workflows take identical inputs, and their job names are
+identical too, so composed check-run names stay the same and any branch protection rule
+referencing them keeps matching.
+
+Runs of `tests.yml` emit a warning annotation and a job-summary notice pointing here.
 
 ## Release
 
