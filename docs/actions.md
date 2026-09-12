@@ -37,6 +37,26 @@ The mechanism: `actions/checkout` with no `repository:` input checks out `${{ gi
 
 ## Follow-up
 
-A guard against consequence 3 is worth adding once the action layer exists in 0.2.0: a lint step (in `ci.yml`, alongside `actionlint`/`zizmor`) that fails if any **step-level** `uses:` (a workflow step, or a composite action's `runs.steps[*].uses`) in this repository starts with `./`. Cheap, mechanical, and turns the dangerous silent case into the loud failing case at review time instead of at some future consumer's run time.
+**Done — `check-relative-uses` in `ci.yml`, see #79.** The guard described below now exists: a lint step (in `ci.yml`, alongside `actionlint`/`zizmor`) that fails if any **step-level** `uses:` (a workflow step, or a composite action's `runs.steps[*].uses`) in this repository starts with `./`. Cheap, mechanical, and turns the dangerous silent case into the loud failing case at review time instead of at some future consumer's run time.
 
 This must **not** flag `jobs.<job_id>.uses: ./.github/workflows/<file>.yml`, a job-level reusable-workflow call. That is a different, GitHub-documented mechanism: it resolves at the same commit as the calling workflow, which is exactly why #35 relies on it (`release.yml`'s tag-triggered wrapper calling `uses: ./.github/workflows/release.yml` from within this repository). A guard that can't tell the two apart would either miss the real risk (composite actions have no `jobs:` key at all, so this distinction matters only for workflow files) or contradict #35's own recommendation.
+
+## The guard, as built
+
+`scripts/check-relative-uses.py`, run by the `check-relative-uses` job. It parses
+each workflow and composite action and reports a step-level `uses:` beginning with
+`./`, while leaving `jobs.<id>.uses` alone.
+
+Two decisions worth recording:
+
+**It parses YAML instead of grepping it.** The distinction between a job-level and a
+step-level `uses:` is structural, not textual, and a composite action has no `jobs:`
+key at all — so there is nothing for an indentation heuristic to anchor on. Two tools
+in this repository already shipped an unanchored `uses:` match and ended up matching
+their own documentation (#70, #75); that lesson is cheaper to apply than to repeat.
+
+**It was verified against fixtures, not against the current tree.** A guard that
+passes on a clean repository has demonstrated nothing. Checked: job-level `./` passes,
+a step-level `./` in a workflow fails, and a step-level `./` inside a composite
+action's `runs.steps` fails — that last case being the one a regex would most likely
+miss.
