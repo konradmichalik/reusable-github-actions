@@ -240,6 +240,31 @@ jobs:
 > [!NOTE]
 > The caller job must grant `contents: write` so the reusable can create the GitHub release. This is only required explicitly if the repository's default workflow token is set to read-only (recommended hardening).
 
+### Accepted tag format
+
+Both release workflows validate the tag and refuse to release anything that does not
+match exactly:
+
+```
+N.N.N       each part 1 to 3 digits
+```
+
+| Tag | | Why |
+|---|---|---|
+| `1.2.3` | accepted | |
+| `0.0.1` | accepted | |
+| `v1.2.3` | rejected | **no `v` prefix.** Deliberate: Composer and TER both take the bare version, so a `v` would have to be stripped somewhere, and "somewhere" is where mistakes live |
+| `1.2` | rejected | all three parts are required |
+| `1.2.3-rc1` | rejected | no pre-release suffixes; this layer has no pre-release process |
+| `1.0.1000` | rejected | the 1-3 digit bound, which is a deliberate limit and not an oversight |
+
+A tag that does not match fails the run with an annotation naming the tag, rather
+than the bare `exit 1` it used to be.
+
+The caller's own trigger is usually `tags: ['*']`, so this check is what stops a
+stray tag from cutting a release. Both workflows validate identically, against
+`github.ref_name`.
+
 ## Release TYPO3
 
 Automated release workflow for TYPO3 extension that creates a new release on GitHub and upload the extension artifact to the TER.
