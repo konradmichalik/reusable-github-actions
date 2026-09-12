@@ -67,6 +67,22 @@ jobs:
             echo "no scripts/*.sh yet, nothing to check"
           fi
 
+  check-relative-uses:
+    name: check-relative-uses
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Check for relative step-level references
+        run: |
+          python3 -c 'import yaml' 2>/dev/null || pip install --quiet pyyaml
+          python3 scripts/check-relative-uses.py
+
   check-action-pins:
     name: check-action-pins
     runs-on: ubuntu-latest
