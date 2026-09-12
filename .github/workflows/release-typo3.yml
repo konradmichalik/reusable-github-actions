@@ -23,6 +23,13 @@ env:
 
 permissions: {}
 
+# Never cancel a release in flight. This workflow spreads artefact build,
+# GitHub release and `tailor ter:publish` across three jobs; a cancellation
+# between them leaves a version on TER with no GitHub release, or the reverse.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build:
     name: Build extension artefact
@@ -32,6 +39,7 @@ jobs:
     # validates the exact N.N.N tag format for real tag runs.
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
     steps:
@@ -93,6 +101,7 @@ jobs:
     name: Create release
     needs: [build]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: write # create GitHub release
     outputs:
@@ -119,6 +128,7 @@ jobs:
     name: Publish on TER
     needs: [release]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
     steps:

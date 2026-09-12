@@ -26,10 +26,16 @@ on:
 
 permissions: {}
 
+# No `concurrency` here on purpose. A caller may invoke this workflow N times
+# from its own matrix, and the callee cannot see the caller's matrix values,
+# so any group it builds would be identical for all N and they would cancel
+# or queue each other. Concurrency for the test workflows is the caller's job.
+
 jobs:
   tests:
     name: Tests (PHP ${{ matrix.php-version }} & ${{ matrix.dependencies }} dependencies)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
     strategy:
@@ -64,6 +70,7 @@ jobs:
   coverage:
     name: Test coverage
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     permissions:
       contents: read
     steps:
@@ -109,6 +116,7 @@ jobs:
       && (github.event_name != 'pull_request'
           || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
     needs: coverage
