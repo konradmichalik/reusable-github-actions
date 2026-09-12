@@ -1,0 +1,28 @@
+# Releases THIS repository. Not a reusable workflow and not callable by consumers:
+# it has no `workflow_call` trigger. Consumers want release.yml, which this one
+# dogfoods.
+#
+# The `uses: ./...` below is a job-level reusable-workflow call, which GitHub
+# resolves at the same commit as this file — so a tag release runs exactly the
+# release.yml that the tag points at. That is a different mechanism from a
+# step-level `./` reference, which resolves against the *caller's* checkout and is
+# unsafe for a workflow other repositories call (see docs/actions.md).
+
+name: Self release
+
+on:
+  push:
+    tags: ['*']
+
+permissions: {}
+
+# Never cancel a release in flight.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    uses: ./.github/workflows/release.yml
+    permissions:
+      contents: write # create the GitHub release
