@@ -514,10 +514,19 @@ detect that on its own. The workflow exposes it as `PAGES_BASE_PATH`; read it in
 `docs/.vitepress/config.*`:
 
 ```js
+const base = process.env.PAGES_BASE_PATH || '/'
+
 export default {
-  base: process.env.PAGES_BASE_PATH || '/',
+  // configure-pages reports the path without a trailing slash
+  // ("/my-repo"), while Vite expects base to end with one.
+  base: base.endsWith('/') ? base : `${base}/`,
 }
 ```
+
+The normalisation is not cosmetic. Verified on a live deployment: the value arrives
+as `/reusable-github-actions-canary`, no trailing slash. Passing it through unchanged
+gives Vite a base it does not expect, and the breakage shows up as asset URLs that
+are subtly wrong rather than as a build error.
 
 Skip this only if your site is served from a domain root.
 
