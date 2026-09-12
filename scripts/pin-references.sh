@@ -28,7 +28,9 @@
 #   0   ran to completion (dry-run or write)
 #   1   usage error
 #   2   could not resolve <version> to a commit SHA
-#   3   a matched file could not be parsed; reported on stderr, run continues
+#   3   a matched file could not be parsed, or contained a reference the
+#       rewrite pattern does not match; each is reported on stderr and the
+#       run continues, but the pin is INCOMPLETE and must be fixed by hand
 
 set -eu
 
@@ -93,6 +95,18 @@ for file in $files; do
     parse_failures=$((parse_failures + 1))
     rm -f "$tmp"
     continue
+  fi
+
+  # The rewrite pattern expects the canonical `uses: <owner>/...@<ref>` spelling.
+  # An unusual one (extra spaces after `uses:`, a quoted value) is matched by the
+  # grep guard above but not by the rewrite, which would leave the reference on
+  # its old ref while this script reports nothing and exits 0 - a consumer that
+  # looks pinned and is not. Anything still carrying a foreign ref is an error.
+  unrewritten=$(grep -nE "uses:.*${reference_pattern}" "$tmp" | grep -vF "@${sha}" || true)
+  if [ -n "$unrewritten" ]; then
+    echo "error: $file has reference(s) this script cannot rewrite:" >&2
+    printf '%s\n' "$unrewritten" | sed 's/^/  /' >&2
+    parse_failures=$((parse_failures + 1))
   fi
 
   if cmp -s "$file" "$tmp"; then
