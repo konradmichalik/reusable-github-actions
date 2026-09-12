@@ -3,7 +3,7 @@
 # Reusable GitHub Actions
 
 [![License](https://img.shields.io/github/license/konradmichalik/reusable-github-actions)](LICENSE)
-[![Workflows](https://img.shields.io/badge/workflows-8-green)]()
+[![Workflows](https://img.shields.io/badge/workflows-10-green)]()
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/konradmichalik/reusable-github-actions/badge)](https://securityscorecards.dev/viewer/?uri=github.com/konradmichalik/reusable-github-actions)
 
 </div>
@@ -24,6 +24,7 @@ This repository provides useful GitHub Action workflows.
 - [Release TYPO3](#release-typo3)
 - [Security](#security)
 - [OpenSSF Scorecard](#openssf-scorecard)
+- [Pages](#pages)
 
 ## Pinning
 
@@ -467,6 +468,58 @@ jobs:
       id-token: write
       actions: read
 ```
+
+## Pages
+
+Builds a [VitePress](https://vitepress.dev) docs site and deploys it to GitHub Pages.
+
+```yaml
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  pages:
+    uses: konradmichalik/reusable-github-actions/.github/workflows/pages.yml@main
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+```
+
+Input|Type| Required |Description
+-|-|----------|-
+`node-version`|input| false    |Node.js version. Defaults to `22`.
+`install-command`|input| false    |Command that installs npm dependencies. Defaults to `npm ci`.
+`build-script`|input| false    |npm script that builds the site. Defaults to `docs:build`.
+`output-dir`|input| false    |Directory holding the built site. Defaults to `docs/.vitepress/dist`.
+`copy-paths`|input| false    |Newline-separated `source destination` pairs copied into the build output after the build. Each destination is relative to `output-dir`.
+
+> [!IMPORTANT]
+> The caller **must** grant all three permissions shown above. Omit one and the run
+> does not fail inside a job — it is rejected at admission with `startup_failure` and
+> **zero jobs listed**, which gives you nothing to read. Permissions only narrow down
+> the call chain, so the reusable workflow cannot grant what the caller withheld.
+
+`npm ci` needs a committed lockfile, same as it does anywhere else.
+
+### Project sites need a base path
+
+On a project site — `<user>.github.io/<repo>/` rather than a custom domain or a
+user/org root site — the built assets live under a sub-path, and VitePress does not
+detect that on its own. The workflow exposes it as `PAGES_BASE_PATH`; read it in
+`docs/.vitepress/config.*`:
+
+```js
+export default {
+  base: process.env.PAGES_BASE_PATH || '/',
+}
+```
+
+Skip this only if your site is served from a domain root.
 
 ## ⭐ License
 
