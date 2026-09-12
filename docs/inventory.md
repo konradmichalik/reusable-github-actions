@@ -27,26 +27,13 @@ API. GitHub's code search index was checked first and found to be non-exhaustive
 | Workflow | References |
 |---|---|
 | `cgl-test.yml` | 23 |
+| `tests-typo3.yml` | 22 |
 | `release-typo3.yml` | 21 |
 | `security.yml` | 19 |
 | `scorecard.yml` | 19 |
-| `tests-typo3.yml` | 16 |
 | `release.yml` | 15 |
 | `cgl.yml` | 13 |
-| `tests.yml` | 6 |
 | `tests-php.yml` | 6 |
-
-## Deprecated `tests.yml` callers
-
-See #39. `tests.yml` is superseded by `tests-typo3.yml` and scheduled for removal
-in `0.3.0`. Migration is a one-line change of the `uses:` path.
-
-- `konradmichalik/typo3-letter-avatar`
-- `konradmichalik/typo3-mcp-server-content-planner`
-- `xima-media/xima-typo3-content-planner`
-- `xima-media/xima-typo3-frontend-edit`
-- `xima-media/xima-typo3-internal-news`
-- `xima-media/xima-typo3-recent-updates`
 
 ## Full detail
 
@@ -109,12 +96,12 @@ in `0.3.0`. Migration is a one-line change of the `uses:` path.
 | konradmichalik/typo3-letter-avatar | public | `.github/workflows/release.yml` | `release-typo3.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
 | konradmichalik/typo3-letter-avatar | public | `.github/workflows/scorecard.yml` | `scorecard.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
 | konradmichalik/typo3-letter-avatar | public | `.github/workflows/security.yml` | `security.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
-| konradmichalik/typo3-letter-avatar | public | `.github/workflows/tests.yml` | `tests.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
+| konradmichalik/typo3-letter-avatar | public | `.github/workflows/tests.yml` | `tests-typo3.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
 | konradmichalik/typo3-mcp-server-content-planner | public | `.github/workflows/cgl.yml` | `cgl-test.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
 | konradmichalik/typo3-mcp-server-content-planner | public | `.github/workflows/release.yml` | `release-typo3.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
 | konradmichalik/typo3-mcp-server-content-planner | public | `.github/workflows/scorecard.yml` | `scorecard.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
 | konradmichalik/typo3-mcp-server-content-planner | public | `.github/workflows/security.yml` | `security.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
-| konradmichalik/typo3-mcp-server-content-planner | public | `.github/workflows/tests.yml` | `tests.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
+| konradmichalik/typo3-mcp-server-content-planner | public | `.github/workflows/tests.yml` | `tests-typo3.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
 | konradmichalik/typo3-page-metrics | private | `.github/workflows/release.yml` | `release-typo3.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
 | konradmichalik/typo3-page-metrics | private | `.github/workflows/scorecard.yml` | `scorecard.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
 | konradmichalik/typo3-page-metrics | private | `.github/workflows/security.yml` | `security.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
@@ -179,14 +166,14 @@ in `0.3.0`. Migration is a one-line change of the `uses:` path.
 | xima-media/xima-typo3-content-planner | public | `.github/workflows/release.yml` | `release-typo3.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
 | xima-media/xima-typo3-content-planner | public | `.github/workflows/scorecard.yml` | `scorecard.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
 | xima-media/xima-typo3-content-planner | public | `.github/workflows/security.yml` | `security.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
-| xima-media/xima-typo3-content-planner | public | `.github/workflows/tests.yml` | `tests.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
+| xima-media/xima-typo3-content-planner | public | `.github/workflows/tests.yml` | `tests-typo3.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
 | xima-media/xima-typo3-frontend-edit | public | `.github/workflows/cgl.yml` | `cgl-test.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
 | xima-media/xima-typo3-frontend-edit | public | `.github/workflows/release.yml` | `release-typo3.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
 | xima-media/xima-typo3-frontend-edit | public | `.github/workflows/scorecard.yml` | `scorecard.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
 | xima-media/xima-typo3-frontend-edit | public | `.github/workflows/security.yml` | `security.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
-| xima-media/xima-typo3-frontend-edit | public | `.github/workflows/tests.yml` | `tests.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
+| xima-media/xima-typo3-frontend-edit | public | `.github/workflows/tests.yml` | `tests-typo3.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
 | xima-media/xima-typo3-internal-news | public | `.github/workflows/cgl.yml` | `cgl-test.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
 | xima-media/xima-typo3-internal-news | public | `.github/workflows/release.yml` | `release-typo3.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
-| xima-media/xima-typo3-internal-news | public | `.github/workflows/tests.yml` | `tests.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
+| xima-media/xima-typo3-internal-news | public | `.github/workflows/tests.yml` | `tests-typo3.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
 | xima-media/xima-typo3-recent-updates | public | `.github/workflows/cgl.yml` | `cgl.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
-| xima-media/xima-typo3-recent-updates | public | `.github/workflows/tests.yml` | `tests.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
+| xima-media/xima-typo3-recent-updates | public | `.github/workflows/tests.yml` | `tests-typo3.yml` | `c460c0166a646cb65fd059c8d2f7d895ff3c787b` |
