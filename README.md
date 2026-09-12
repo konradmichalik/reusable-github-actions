@@ -144,7 +144,42 @@ jobs:
             dependencies: '["highest", "lowest"]'
 ```
 
-### Coverage Reporting
+### Testing TYPO3 12.4 requires an audit setting
+
+If your matrix includes TYPO3 **12.4** — which the default `typo3-versions` does —
+your repository needs this in its own `composer.json`:
+
+```json
+{
+    "config": {
+        "audit": {
+            "block-insecure": false
+        }
+    }
+}
+```
+
+Without it the job fails at dependency install, not at test time:
+
+```
+Root composer.json requires typo3/cms-core ^12.4, found typo3/cms-core[v12.4.0, ...,
+v12.4.45] but these were not loaded, because they are affected by security advisories
+```
+
+Every currently published `12.4` release carries an open security advisory, and
+Composer refuses to resolve a package in that state. Pinning the matrix to `^12.4`
+leaves it nothing else to pick, so the lane cannot install at all.
+
+> [!IMPORTANT]
+> `--no-audit` does **not** help here, and this is the part that costs people an
+> afternoon. It suppresses the separate `composer audit` *report*; the block above
+> happens earlier, during dependency resolution, and is governed only by
+> `config.audit.block-insecure`.
+
+This is a deliberate choice not to set the flag inside the workflow. Doing so would
+disable Composer's security-advisory filter for every consumer, including those who
+never test 12.4 and have no reason to lower that guard. The `13.4` and `14.x` lines
+are unaffected and need nothing.
 
 Coverage goes to [Coveralls](https://coveralls.io) and nowhere else. The caller
 configures nothing: the workflow uploads the `clover.xml` that the consumer's own
