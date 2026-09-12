@@ -7,20 +7,6 @@
 # what is genuinely still open, not a permanent allowlist.
 
 rules:
-  unpinned-uses:
-    ignore:
-      # Third-party actions pinned to a mutable tag instead of a commit SHA.
-      # Tracked in #32.
-      - cgl-test.yml
-      - cgl.yml
-      - release-typo3.yml
-      - release.yml
-      - scorecard.yml
-      - security.yml
-      - tests-php.yml
-      - tests-typo3.yml
-      - tests.yml
-
   artipacked:
     ignore:
       # `actions/checkout` without `persist-credentials: false`. Tracked in
@@ -34,13 +20,6 @@ rules:
       - tests-php.yml
       - tests-typo3.yml
       - tests.yml
-
-  template-injection:
-    ignore:
-      # `${{ }}` expressions interpolated directly into a `run:` block
-      # instead of being passed through `env:`. Tracked in #31.
-      - release.yml
-      - release-typo3.yml
 
   archived-uses:
     ignore:
@@ -60,5 +39,11 @@ rules:
       # does and that CLI is preinstalled on GitHub-hosted runners. Genuine
       # simplification, but a behaviour-adjacent change to a release
       # workflow, so it is not scheduled rather than silently taken.
-      - release.yml:30
-      - release-typo3.yml:103
+      #
+      # Deliberately not line-anchored. These were `release.yml:30` and
+      # `release-typo3.yml:103` until adding an `env:` block above each step
+      # shifted both, and a stale anchor does not warn, it just stops
+      # matching. Each file uses this action exactly once, so scoping to the
+      # file is equivalent and does not rot.
+      - release.yml
+      - release-typo3.yml

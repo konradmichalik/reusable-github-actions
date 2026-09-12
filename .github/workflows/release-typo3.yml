@@ -37,8 +37,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Check tag
+        env:
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          if ! [[ ${{ github.ref_name }} =~ ^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$ ]]; then
+          if ! [[ "$REF_NAME" =~ ^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$ ]]; then
             exit 1
           fi
 
@@ -71,9 +73,11 @@ jobs:
         run: git stash pop
 
       - name: Create artefact
+        env:
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          php ~/.composer/vendor/bin/tailor set-version "${{ github.ref_name }}"
-          php ~/.composer/vendor/bin/tailor create-artefact "${{ github.ref_name }}"
+          php ~/.composer/vendor/bin/tailor set-version "$REF_NAME"
+          php ~/.composer/vendor/bin/tailor create-artefact "$REF_NAME"
 
       - name: Upload extension artefact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -120,7 +124,9 @@ jobs:
 
       - name: Set release comment
         id: get-comment
-        run: echo "comment=See release notes at ${{ needs.release.outputs.release-notes-url }}" >> "$GITHUB_OUTPUT"
+        env:
+          RELEASE_NOTES_URL: ${{ needs.release.outputs.release-notes-url }}
+        run: echo "comment=See release notes at $RELEASE_NOTES_URL" >> "$GITHUB_OUTPUT"
 
       - name: Setup PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2.37.2
@@ -130,8 +136,13 @@ jobs:
           tools: composer:v2, typo3/tailor
 
       - name: Publish to TER
+        env:
+          RELEASE_COMMENT: ${{ steps.get-comment.outputs.comment }}
+          ARTEFACT_PATH: ${{ steps.download.outputs.download-path }}
+          ARTEFACT_NAME: ${{ env.EXTENSION_ARTEFACT }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
           php ~/.composer/vendor/bin/tailor ter:publish \
-            --comment "${{ steps.get-comment.outputs.comment }}" \
-            --artefact "${{ steps.download.outputs.download-path }}/${{ env.EXTENSION_ARTEFACT }}" \
-            "${{ github.ref_name }}"
+            --comment "$RELEASE_COMMENT" \
+            --artefact "$ARTEFACT_PATH/$ARTEFACT_NAME" \
+            "$REF_NAME"
