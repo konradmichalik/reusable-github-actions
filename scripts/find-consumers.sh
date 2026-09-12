@@ -46,7 +46,10 @@ reference_pattern='(konradmichalik|jackd248)/reusable-github-actions'
 # Pinning these would be wrong on two counts: the canary's whole purpose is
 # to stay unpinned, and spike repositories are meant to be archived or
 # deleted, not tracked as ongoing consumers.
-excluded_repos='reusable-github-actions-canary spike-uses-resolution spike-pages-workflow'
+# `reusable-github-actions` is this project itself, not a consumer of itself.
+# It only started matching once tests.yml gained a deprecation notice quoting a
+# caller snippet, which is also why the line match below is anchored.
+excluded_repos='reusable-github-actions reusable-github-actions-canary spike-uses-resolution spike-pages-workflow'
 
 is_excluded() {
   for excluded in $excluded_repos; do
@@ -108,7 +111,11 @@ for owner in $owners; do
         continue
       fi
 
-      echo "$content" | grep -E "uses:.*${reference_pattern}" | while IFS= read -r line; do
+      # Anchored to an actual YAML key (optional list dash, then `uses:`) rather
+      # than `uses:` anywhere on the line. Unanchored, prose that quotes a caller
+      # snippet — a deprecation notice echoing one, for instance — is counted as a
+      # real reference and inflates the inventory.
+      echo "$content" | grep -E "^[[:space:]]*-?[[:space:]]*uses:.*${reference_pattern}" | while IFS= read -r line; do
         referenced_owner_repo=$(echo "$line" | grep -oE "${reference_pattern}")
         workflow_path=$(echo "$line" | sed -E 's#.*reusable-github-actions/([^@[:space:]]*)@.*#\1#')
         ref=$(echo "$line" | sed -E 's#.*reusable-github-actions/[^@[:space:]]*@([^[:space:]]*).*#\1#')
