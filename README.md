@@ -25,6 +25,49 @@ This repository provides useful GitHub Action workflows.
 - [Security](#security)
 - [OpenSSF Scorecard](#openssf-scorecard)
 
+## Pinning
+
+Pin every reference to a **full 40-character commit SHA**, with the version as a
+trailing comment:
+
+```yaml
+jobs:
+    cgl:
+        uses: konradmichalik/reusable-github-actions/.github/workflows/cgl.yml@ac6ac4d7829d8e8f85956c7474ee3ff99b98c9ed # 0.0.1
+```
+
+The comment is not decoration. Renovate reads it as the current version, and rewrites
+the SHA **and** the comment together when a new release lands. Drop it and Renovate
+marks the reference `unversioned-reference` and stops updating it — you get an opaque
+hash nobody can date and nothing to bump it.
+
+Two details that matter, both verified against Renovate's
+[github-actions manager](https://docs.renovatebot.com/modules/manager/github-actions/)
+rather than assumed:
+
+- **The version must start the comment.** `# 0.1.0` works, `# pinned to 0.1.0` does
+  not — the leading prose stops it matching, and the reference silently degrades.
+- **No Renovate configuration is required.** The manager recognises a job-level
+  `uses:` as a reusable workflow on its own, and unprefixed tags like `0.1.0` are
+  handled the same as `v`-prefixed ones. Nothing needs adding to your `renovate.json`.
+
+**Not a tag, and there is no floating major.** A tag can be repointed at different
+code after you reviewed it; released tags here are never moved, and no `v1`-style
+moving tag is offered at all. With SHA pins plus Renovate a floating major buys
+nothing an automated bump does not already give you, and a tag that can move would
+defeat the audit trail pinning exists to provide — if `v1` can mean something else
+tomorrow, pinning to `v1` today was never a pin.
+
+To roll back, revert your pin. That is a one-line change in your own repository, and
+the previous commit still exists because tags are immutable.
+
+Full policy — what counts as a breaking change, the support window, the release
+procedure — in [`docs/stability.md`](docs/stability.md).
+
+> [!NOTE]
+> The examples below use `@main` for readability. Real callers should pin. The
+> inventory of who currently references what lives in [`docs/inventory.md`](docs/inventory.md).
+
 ## Caller trigger convention
 
 Trigger CI-style workflows (`cgl.yml`, `cgl-test.yml`, `tests-php.yml`, `tests-typo3.yml`, `security.yml`) with:
