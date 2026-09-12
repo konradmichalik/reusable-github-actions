@@ -76,9 +76,15 @@ Trigger CI-style workflows (`cgl.yml`, `cgl-test.yml`, `tests-php.yml`, `tests-t
 ```yaml
 on:
   push:
-    branches: [main]
+    branches: [main, 'renovate/**']
   pull_request: ~
 ```
+
+`renovate/**` is not decoration. Renovate automerges pin bumps by pushing a branch
+and waiting for that branch to go green — no pull request involved. Without a `push`
+trigger matching its branches, nothing runs there, the branch stays `pending`, and the
+bump stalls for a day before falling back to a pull request. See
+[Automerge](#automerge).
 
 **Not** `push` with `branches: ['**']`. That pattern, seen across several consumers of this layer, runs the full matrix on every push to every branch, and then a *second* time when a pull request from that branch is opened or updated: the branch-push event and the pull request event both fire and both trigger the workflow. They don't run the literal same commit — `push` runs the commit as pushed, `pull_request` runs GitHub's synthetic merge of it into the target branch — but for a feature branch with no conflicting changes on the target, that difference rarely matters in practice, and the two runs are overlapping validation of the same branch update, paid for twice. For a workflow with an 18-job matrix, that is 18 duplicate jobs on every PR update.
 
@@ -87,6 +93,52 @@ on:
 **Verified, not assumed:** none of this layer's 39 consumers has a branch protection rule or ruleset that depends on a check running on a direct push to a non-default branch. The one consumer with a `required_status_checks` rule (`move-elevator/typo3-login-warning`, gating `cgl / cgl`) requires it on the `pull_request` event, which this convention still provides — switching away from `push: ['**']` does not remove that check, only the redundant duplicate of it. Rulesets are unavailable on private repositories on the free plan, which by itself already rules out branch-scoped protection rules for four of the 39.
 
 The concept behind this repository claimed the convention change "removes the need for a preparation workflow entirely". That does not hold up: the one real reference implementation of a `preparation` workflow found in a comparable third-party layer exists to gate execution on fork pull requests where secrets are unavailable, not to deduplicate push-vs-PR runs, and is unrelated to this convention. Independent of that, no workflow inside *this* repository could ever fix caller-side event duplication regardless of its design: GitHub evaluates a caller's own trigger conditions, and therefore whether a run happens at all, before any `uses:` reference in that caller is even resolved. The fix has to happen in the caller's `on:` block, which is exactly what this convention is.
+
+## Automerge
+
+Pin bumps of this layer **automerge on patch and minor**, via the shared
+[`konradmichalik/renovate-config`](https://github.com/konradmichalik/renovate-config)
+preset every consumer already extends. Major bumps never automerge.
+
+That is defensible because a release here is signed off before it exists: the canary
+exercises all ten workflows against `main`, and the release notes name every
+consumer-visible change. It is not a blanket "trust the robot" — it is trust in a
+specific, observed gate.
+
+### How it merges, and what gates it
+
+Renovate uses **branch** automerge: it pushes a branch, waits for that branch to go
+green, then fast-forwards your default branch. **No pull request is created.**
+
+The gate is therefore the checks that run on a push to that branch — which is exactly
+why the [trigger convention](#caller-trigger-convention) above includes `renovate/**`.
+Get that wrong and the failure is quiet rather than dangerous:
+
+| Situation | What happens |
+|---|---|
+| Checks run and pass | Merged, no PR |
+| Checks run and fail | No merge; Renovate opens a PR so you can see it |
+| **No checks run at all** | GitHub reports the branch as `pending`, Renovate treats that as not-green and **refuses to merge**. After ~25 hours it gives up and opens a PR |
+
+The third row is the one worth knowing: nothing unsafe happens, but the bump silently
+does nothing for a day and then turns into manual work. Verified against GitHub's
+combined-status API, which returns `{"state":"pending","total_count":0}` for a commit
+with no checks.
+
+> [!IMPORTANT]
+> On that fallback pull request, GitHub's own auto-merge takes over
+> (`platformAutomerge`). Renovate's documentation warns that if a repository has **no
+> required status checks configured**, GitHub may merge such a pull request regardless
+> of test results. At the time of writing exactly one consumer of this layer has
+> required status checks. So the `renovate/**` trigger is not a nicety — for most
+> repositories here it is the only thing standing between a bump and an unverified
+> merge.
+
+### Expected volume
+
+One branch per consumer per release, not one per reference: the shared preset groups
+them. A release of this layer therefore produces up to 41 branches, most of which
+merge themselves without ever becoming a pull request.
 
 ## Concurrency
 

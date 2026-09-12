@@ -40,6 +40,43 @@ A consumer rolls back by reverting their own pin, a one-line change in their own
 
 One maintained line: the latest minor release. No parallel major-version support, no backport branches. This matches the project's own stated scope (personal-use layer, not a general-purpose product) rather than promising a support model nobody, including the maintainer, would sustain. A security-relevant fix lands in a new patch release of the current minor; there is no older line it also needs to land in.
 
+## Automerge
+
+Pin bumps of this layer automerge on **patch and minor**; **major never does**. The
+rule lives in the shared `konradmichalik/renovate-config` preset, so it is written
+once rather than per repository.
+
+The justification is the canary, not optimism: a release is not tagged until the
+canary has exercised all ten workflows against the commit being tagged. A consumer
+automerging a patch is accepting a change that has already run against a real
+repository calling every workflow. A major bump, by definition, may change what a
+caller has to provide, so it always gets a human.
+
+**Third-party actions inside this repository do not automerge.** That is a different
+risk profile: nobody here reviewed that code, and the whole point of SHA-pinning them
+(see Pinning) is that a version move is a deliberate act.
+
+### What actually gates it
+
+Renovate uses branch automerge: it pushes a branch, waits for it to go green, and
+fast-forwards the base branch without opening a pull request. So the gate is whatever
+runs on a **push to that branch**, which is why the caller trigger convention includes
+`renovate/**`.
+
+If nothing runs there, GitHub reports the branch as `pending`, Renovate declines to
+merge, and after roughly 25 hours falls back to a pull request. Nothing unsafe, but
+the bump does nothing at all for a day and then becomes manual work.
+
+On that fallback pull request GitHub's own auto-merge applies, and Renovate documents
+that with no required status checks configured GitHub may merge it regardless of test
+results. Most consumers of this layer have no required status checks. The `renovate/**`
+trigger is therefore the load-bearing part of this arrangement, not a convenience.
+
+### Opting out
+
+A consumer that wants every bump reviewed sets `automerge: false` for this layer in
+its own `renovate.json`. Nothing here forces the default.
+
 ## Release procedure
 
 The standing procedure for any release that contains a breaking change, not only this milestone's first one. Written once here so it does not need re-deciding under time pressure next time.
