@@ -1,4 +1,16 @@
-# ToDo: Remove this file, when all packages use the new tests-typo3.yml
+# DEPRECATED — superseded by tests-typo3.yml, scheduled for removal in 0.3.0.
+#
+# Kept functional because it still has real callers (see docs/inventory.md).
+# Deleting it would break them immediately, so it is deprecated rather than
+# removed, and the removal is gated on those callers migrating.
+#
+# Migration is a one-line change of the `uses:` path in the caller. The input
+# blocks of the two files are identical, and so are the job names, so composed
+# check-run names do not change and branch protection rules keep matching.
+#
+# Do not add features here. Fixes that keep the six callers working (timeouts,
+# the permissions baseline, security fixes) do belong here — a deprecated
+# workflow that is someone's only test coverage still has to be safe to run.
 name: Tests
 
 on:
@@ -86,6 +98,26 @@ jobs:
       typo3DatabaseUsername: root
       typo3DatabasePassword: root
     steps:
+      # Emitted here rather than in `tests`, which is a matrix job and would
+      # repeat this once per combination.
+      - name: Deprecation notice
+        run: |
+          echo "::warning title=Deprecated workflow::tests.yml is superseded by tests-typo3.yml and will be removed in 0.3.0. Migration is a one-line change of the uses: path."
+          {
+            echo "### :warning: \`tests.yml\` is deprecated"
+            echo
+            echo "Superseded by \`tests-typo3.yml\`, **removal planned for 0.3.0**."
+            echo
+            echo "Migration is one line in your caller:"
+            echo
+            echo '```diff'
+            echo '-    uses: konradmichalik/reusable-github-actions/.github/workflows/tests.yml@<ref>'
+            echo '+    uses: konradmichalik/reusable-github-actions/.github/workflows/tests-typo3.yml@<ref>'
+            echo '```'
+            echo
+            echo "The input blocks and job names are identical, so no other change is needed and required status checks keep matching."
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
