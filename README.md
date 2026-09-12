@@ -103,6 +103,8 @@ Input|Type| Required |Description
 -|-|----------|-
 `php-versions`|input| false    |PHP versions as JSON array. Defaults to `["8.2", "8.3", "8.4"]`.
 `dependencies`|input| false    |Dependencies as JSON array. Defaults to `["highest", "lowest"]`.
+`coverage-dir`|input| false    |Directory your `test:coverage` script writes `clover.xml` to. Defaults to `.build/coverage`.
+`coveralls`|input| false    |Upload coverage to Coveralls. Defaults to `true`.
 
 ## Tests TYPO3
 
@@ -126,6 +128,8 @@ Input|Type| Required |Description
 `php-versions`|input| false    |PHP versions as JSON array. Defaults to `["8.2", "8.3", "8.4"]`.
 `typo3-versions`|input| false    |TYPO3 versions as JSON array. Defaults to `["11.5", "12.4", "13.4"]`.
 `dependencies`|input| false    |Dependencies as JSON array. Defaults to `["highest", "lowest"]`.
+`coverage-dir`|input| false    |Directory your `test:coverage` script writes `clover.xml` to. Defaults to `.Build/coverage`.
+`coveralls`|input| false    |Upload coverage to Coveralls. Defaults to `true`.
 
 ```yaml
 name: Tests
@@ -181,9 +185,30 @@ disable Composer's security-advisory filter for every consumer, including those 
 never test 12.4 and have no reason to lower that guard. The `13.4` and `14.x` lines
 are unaffected and need nothing.
 
-Coverage goes to [Coveralls](https://coveralls.io) and nowhere else. The caller
-configures nothing: the workflow uploads the `clover.xml` that the consumer's own
-`test:coverage` composer script produces.
+Coverage goes to [Coveralls](https://coveralls.io) and nowhere else. The workflow
+uploads the `clover.xml` that your own `test:coverage` composer script produces.
+
+Your script decides where that file lands — usually via `phpunit.xml` — so tell the
+workflow if it is not the default. The defaults differ per workflow and match each
+one's existing convention: `.build/coverage` for `tests-php.yml`, `.Build/coverage`
+for `tests-typo3.yml`. On Linux those are two different directories.
+
+```yaml
+with:
+    coverage-dir: '.Build/coverage'
+```
+
+If the repository is not enabled on Coveralls, turn the upload off rather than
+letting it fail:
+
+```yaml
+with:
+    coveralls: false
+```
+
+The whole reporting job is skipped when it is off, and on pull requests from forks,
+where the upload cannot succeed and a failure would mark an otherwise fine
+contribution red.
 
 > [!NOTE]
 > CodeClimate reporting used to be listed here as an option enabled by a

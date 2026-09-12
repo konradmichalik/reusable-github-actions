@@ -18,6 +18,16 @@ on:
         required: false
         default: '["highest", "lowest"]'
         type: string
+      coverage-dir:
+        description: 'Directory your test:coverage script writes clover.xml to'
+        required: false
+        default: '.Build/coverage'
+        type: string
+      coveralls:
+        description: 'Upload coverage to Coveralls. Turn off if the repository is not enabled there'
+        required: false
+        default: true
+        type: boolean
 
 permissions: {}
 
@@ -104,18 +114,23 @@ jobs:
         run: composer test:coverage
 
       # Upload artifact
-      - name: Fix coverage path
-        working-directory: .Build/coverage
-        run: sed -i 's#/var/www/html#${{ github.workspace }}#g' clover.xml
       - name: Upload coverage artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: coverage
-          path: .Build/coverage/clover.xml
+          path: ${{ inputs.coverage-dir }}/clover.xml
           retention-days: 7
 
   report-coverage:
     name: Report test coverage
+    # Coveralls is the only thing this job does, so skip the whole job rather
+    # than checking out and downloading an artifact to do nothing with. Fork
+    # pull requests are excluded: the upload needs a token the fork cannot
+    # have, and failing there would red-flag an otherwise fine contribution.
+    if: >-
+      inputs.coveralls
+      && (github.event_name != 'pull_request'
+          || github.event.pull_request.head.repo.full_name == github.repository)
     needs: test-coverage
     runs-on: ubuntu-latest
     permissions:
@@ -138,3 +153,4 @@ jobs:
         uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
         with:
           file: ${{ steps.download.outputs.download-path }}/clover.xml
+          github-token: ${{ secrets.GITHUB_TOKEN }}
