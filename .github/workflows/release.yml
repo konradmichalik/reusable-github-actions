@@ -8,7 +8,7 @@ permissions: {}
 # Never cancel a release in flight: a half-finished release leaves a tag
 # with no GitHub release behind it.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:

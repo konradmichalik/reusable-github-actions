@@ -27,7 +27,7 @@ permissions: {}
 # GitHub release and `tailor ter:publish` across three jobs; a cancellation
 # between them leaves a version on TER with no GitHub release, or the reverse.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-release-typo3-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
