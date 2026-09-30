@@ -1,0 +1,72 @@
+name: Mutation
+
+on:
+  workflow_call:
+    inputs:
+      php-version:
+        required: false
+        default: '8.2'
+        type: string
+      min-covered-msi:
+        required: false
+        default: '65'
+        type: string
+      static-analysis:
+        required: false
+        default: false
+        type: boolean
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-mutation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      # The base branch is needed for the diff
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      # Prepare environment
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2.37.2
+        with:
+          php-version: ${{ inputs.php-version }}
+          coverage: pcov
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Install dependencies
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
+
+      # Mutation testing on the lines changed by the pull request
+      - name: Run Infection
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          MIN_COVERED_MSI: ${{ inputs.min-covered-msi }}
+          STATIC_ANALYSIS: ${{ inputs.static-analysis }}
+        run: |
+          : "${BASE_REF:?Mutation testing needs a pull_request event, github.base_ref is empty}"
+          args=(
+            --git-diff-lines
+            "--git-diff-base=origin/${BASE_REF}"
+            --map-source-class-to-test
+            "--min-covered-msi=${MIN_COVERED_MSI}"
+            --ignore-msi-with-no-mutations
+            --threads=max
+            --no-progress
+            --show-mutations=20
+          )
+          if [ "${STATIC_ANALYSIS}" = "true" ]; then
+            args+=(--static-analysis-tool=phpstan)
+          fi
+          vendor/bin/infection "${args[@]}"
