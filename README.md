@@ -3,7 +3,7 @@
 # Reusable GitHub Actions
 
 [![License](https://img.shields.io/github/license/konradmichalik/reusable-github-actions)](LICENSE)
-[![Workflows](https://img.shields.io/badge/workflows-10-green)]()
+[![Workflows](https://img.shields.io/badge/workflows-11-green)]()
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/konradmichalik/reusable-github-actions/badge)](https://securityscorecards.dev/viewer/?uri=github.com/konradmichalik/reusable-github-actions)
 
 </div>
@@ -37,6 +37,7 @@ Two consequences worth stating plainly, so nobody has to infer them:
 - [Tests](#tests)
 - [Tests TYPO3](#tests-typo3)
 - [Tests (deprecated)](#tests-deprecated)
+- [Mutation](#mutation)
 - [Release](#release)
 - [Release TYPO3](#release-typo3)
 - [Security](#security)
@@ -165,6 +166,7 @@ block in the caller:
 | Workflow | Handled by | Cancels superseded runs |
 |---|---|---|
 | `cgl.yml`, `cgl-test.yml` | the workflow | yes |
+| `mutation-php.yml` | the workflow | yes |
 | `security.yml` | the workflow | yes |
 | `scorecard.yml` | the workflow | no — a run publishes to the OpenSSF results API |
 | `release.yml`, `release-typo3.yml` | the workflow | no — see below |
@@ -398,6 +400,31 @@ identical too, so composed check-run names stay the same and any branch protecti
 referencing them keeps matching.
 
 Runs of `tests.yml` emit a warning annotation and a job-summary notice pointing here.
+
+## Mutation
+
+Runs [Infection](https://infection.github.io/) only on the lines a pull request changes and fails below a covered MSI threshold. It needs a `pull_request` trigger, because the diff is taken against `origin/<base branch>`. The `paths` filter stays in the caller, it differs per project.
+
+```yaml
+name: Mutation
+on:
+  pull_request:
+    paths: ['Classes/**', 'Tests/Unit/**', 'composer.lock', 'infection.json5']
+
+jobs:
+    mutation:
+        uses: konradmichalik/reusable-github-actions/.github/workflows/mutation-php.yml@<sha> # <version>
+        with:
+            min-covered-msi: 65
+```
+
+Input|Type| Required |Description
+-|-|----------|-
+`php-version`|input| false    |PHP version for the run, use the lowest one the package supports. Defaults to `8.2`.
+`min-covered-msi`|input| false    |Value for `--min-covered-msi`. Defaults to `65`.
+`static-analysis`|input| false    |Pass `--static-analysis-tool=phpstan`. Only enable it when PHPStan is installed in the root `vendor/`. Defaults to `false`.
+
+The flags need Infection 0.32 or later.
 
 ## Release
 
