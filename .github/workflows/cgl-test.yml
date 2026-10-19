@@ -88,7 +88,7 @@ jobs:
         run: composer cgl migration:rector -- --dry-run
 
   sca-typo3:
-    name: SCA on TYPO3 ${{ inputs.sca-typo3-version }}
+    name: SCA on additional TYPO3 version
     if: inputs.sca-typo3-version != ''
     runs-on: ubuntu-latest
     timeout-minutes: 10
