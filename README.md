@@ -243,6 +243,23 @@ jobs:
 Input|Type| Required |Description
 -|-|----------|-
 `php-version`|input| false    |PHP version to use for the CGL check. Defaults to `8.3`.
+`sca-typo3-version`|input| false    |Additional TYPO3 version to run static analysis against, for example `14.3`. Empty (default) skips the job.
+`sca-typo3-script`|input| false    |`cgl` target that job runs. Defaults to `sca:php`.
+
+### Static analysis against a second TYPO3 version
+
+The `cgl` job installs from `composer.lock`, so PHPStan only sees the locked TYPO3
+version. Code that exists for the other LTS version (for example classes that need v14
+interfaces) is never analysed. Set `sca-typo3-version` to add a job that re-resolves
+the lock file with `--with=typo3/cms-core:^<version>`, installs from it and runs
+`composer cgl <sca-typo3-script>`. A separate script lets that run load its own
+PHPStan config and baseline:
+
+```yaml
+with:
+    sca-typo3-version: '14.3'
+    sca-typo3-script: 'sca:php:v14'
+```
 
 ## Tests
 
@@ -291,6 +308,9 @@ Input|Type| Required |Description
 `dependencies`|input| false    |Dependencies as JSON array. Defaults to `["highest", "lowest"]`.
 `coverage-dir`|input| false    |Directory your `test:coverage` script writes `clover.xml` to. Defaults to `.Build/coverage`.
 `coveralls`|input| false    |Upload coverage to Coveralls. Defaults to `true`.
+`databases`|input| false    |MySQL or MariaDB images as JSON array for an extra functional test job, for example `["mysql:8.4", "mariadb:11.4"]`. Defaults to `[]`, which skips the job.
+`databases-php-version`|input| false    |PHP version of that job. Defaults to `8.4`.
+`databases-script`|input| false    |Composer script that job runs. Defaults to `test:functional`.
 
 ```yaml
 name: Tests
@@ -308,6 +328,24 @@ jobs:
             typo3-versions: '["11.5", "12.4", "13.4"]'
             dependencies: '["highest", "lowest"]'
 ```
+
+### Functional tests against MySQL and MariaDB
+
+Functional tests usually run on SQLite. Raw SQL that SQLite accepts can still fail on
+MySQL or MariaDB. The TYPO3 testing framework sets `ONLY_FULL_GROUP_BY` there, so
+MariaDB rejects for example `SELECT table.* ... GROUP BY uid`. Set `databases` to run
+`databases-script` once per image and TYPO3 version, with the highest dependencies:
+
+```yaml
+with:
+    databases: '["mysql:8.4", "mariadb:11.4"]'
+    databases-php-version: '8.5'
+```
+
+The job sets `typo3DatabaseDriver=mysqli` and the connection variables through the
+environment. A `<env>` entry in your `phpunit.xml` does not override them unless it has
+`force="true"`. Pin an image with a digest (`mysql:8.4@sha256:...`) if you want it
+immutable; the workflow cannot pin what the caller chooses.
 
 ### Testing TYPO3 12.4 requires an audit setting
 

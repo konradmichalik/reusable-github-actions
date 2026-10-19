@@ -28,6 +28,21 @@ on:
         required: false
         default: true
         type: boolean
+      databases:
+        description: 'MySQL or MariaDB images as JSON array to run the functional tests against, e.g. ["mysql:8.4", "mariadb:11.4"]. Empty skips the job'
+        required: false
+        default: '[]'
+        type: string
+      databases-php-version:
+        description: 'PHP version for the database job'
+        required: false
+        default: '8.4'
+        type: string
+      databases-script:
+        description: 'Composer script that runs the functional tests in the database job'
+        required: false
+        default: 'test:functional'
+        type: string
 
 permissions: {}
 
@@ -82,6 +97,72 @@ jobs:
       # Run tests
       - name: Run tests
         run: composer test
+
+  # The matrix above runs whatever database the consumer's test config picks (often
+  # SQLite). This job runs the functional tests against real MySQL/MariaDB servers,
+  # with the highest dependencies only, since it targets SQL dialect differences.
+  functional-tests-databases:
+    # A static name: a skipped job shows it unevaluated, a run gets the matrix values appended.
+    name: Functional tests on databases
+    if: inputs.databases != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        typo3-version: ${{ fromJson(inputs.typo3-versions || '["11.5", "12.4", "13.4"]') }}
+        database: ${{ fromJson(inputs.databases) }}
+    services:
+      database:
+        # The caller picks the image and can pin it with a digest (mysql:8.4@sha256:...).
+        image: ${{ matrix.database }} # zizmor: ignore[unpinned-images]
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+    env:
+      typo3DatabaseDriver: mysqli
+      typo3DatabaseName: typo3
+      typo3DatabaseHost: '127.0.0.1'
+      typo3DatabasePort: 3306
+      typo3DatabaseUsername: root
+      typo3DatabasePassword: root
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      # Prepare environment
+      - name: Setup PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: ${{ inputs.databases-php-version }}
+          tools: composer:v2
+          coverage: none
+
+      # Install dependencies
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
+        with:
+          dependency-versions: highest
+          composer-options: --with=typo3/cms-core:"^${{ matrix.typo3-version }}"
+
+      # The service container starts before the steps, but the server inside needs a few seconds more
+      - name: Wait for database
+        run: |
+          for _ in $(seq 1 30); do
+            mysqladmin ping -h 127.0.0.1 -u root -proot --silent && exit 0
+            sleep 2
+          done
+          exit 1
+
+      # Run tests
+      - name: Run functional tests
+        run: composer "$SCRIPT"
+        env:
+          SCRIPT: ${{ inputs.databases-script }}
 
   test-coverage:
     name: Test coverage
