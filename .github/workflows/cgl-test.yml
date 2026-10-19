@@ -7,6 +7,16 @@ on:
         required: false
         default: '8.2'
         type: string
+      sca-typo3-version:
+        description: 'Additional TYPO3 version to run static analysis against, e.g. "14.3". The cgl job analyses the locked one. Empty skips the job'
+        required: false
+        default: ''
+        type: string
+      sca-typo3-script:
+        description: 'cgl target for the additional static analysis, e.g. a script that loads a version-specific PHPStan config'
+        required: false
+        default: 'sca:php'
+        type: string
 
 permissions: {}
 
@@ -76,3 +86,37 @@ jobs:
       # Migration
       - name: Run Rector migration
         run: composer cgl migration:rector -- --dry-run
+
+  sca-typo3:
+    name: SCA on TYPO3 ${{ inputs.sca-typo3-version }}
+    if: inputs.sca-typo3-version != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      # Prepare environment
+      - name: Setup PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: ${{ inputs.php-version }}
+          tools: composer:v2
+
+      # Resolve the lock file for the requested TYPO3 version, then install from it like
+      # the cgl job does, so the consumer's install hooks (e.g. nested tool projects) run.
+      - name: Update composer.lock
+        run: composer update --no-install --no-progress --with="typo3/cms-core:^$TYPO3_VERSION"
+        env:
+          TYPO3_VERSION: ${{ inputs.sca-typo3-version }}
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
+
+      # SCA
+      - name: SCA PHP
+        run: composer cgl "$SCRIPT" -- --error-format github
+        env:
+          SCRIPT: ${{ inputs.sca-typo3-script }}
