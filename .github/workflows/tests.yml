@@ -73,7 +73,7 @@ jobs:
 
       # Start MySQL service
       - name: Start MySQL
-        run: sudo /etc/init.d/mysql start
+        run: sudo systemctl start mysql.service
 
       # Install dependencies
       - name: Install Composer dependencies
@@ -133,7 +133,7 @@ jobs:
 
       # Start MySQL service
       - name: Start MySQL
-        run: sudo /etc/init.d/mysql start
+        run: sudo systemctl start mysql.service
 
       # Install dependencies
       - name: Install Composer dependencies
