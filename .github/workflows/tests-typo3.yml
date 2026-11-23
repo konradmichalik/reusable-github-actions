@@ -6,12 +6,17 @@ on:
       php-versions:
         description: 'PHP versions as JSON array'
         required: false
-        default: '["8.2", "8.3", "8.4"]'
+        default: '["8.2", "8.3", "8.4", "8.5"]'
         type: string
       typo3-versions:
-        description: 'TYPO3 versions as JSON array'
+        description: 'TYPO3 versions as JSON array. Each entry is installed as typo3/cms-core:^<entry>, so with highest dependencies 14.0 and 14.3 resolve to the same release and a second minor of a major only adds coverage in the lowest jobs'
         required: false
-        default: '["11.5", "12.4", "13.4"]'
+        default: '["13.4", "14.3"]'
+        type: string
+      exclude:
+        description: 'Matrix combinations to skip as JSON array of objects, e.g. [{"php-version":"8.6","typo3-version":"12.4"}]. Keys: php-version, typo3-version, dependencies'
+        required: false
+        default: '[]'
         type: string
       dependencies:
         description: 'Dependencies as JSON array'
@@ -61,9 +66,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ${{ fromJson(inputs.php-versions || '["8.2", "8.3", "8.4"]') }}
-        typo3-version: ${{ fromJson(inputs.typo3-versions || '["11.5", "12.4", "13.4"]') }}
+        php-version: ${{ fromJson(inputs.php-versions || '["8.2", "8.3", "8.4", "8.5"]') }}
+        typo3-version: ${{ fromJson(inputs.typo3-versions || '["13.4", "14.3"]') }}
         dependencies: ${{ fromJson(inputs.dependencies || '["highest", "lowest"]') }}
+        exclude: ${{ fromJson(inputs.exclude || '[]') }}
     env:
       typo3DatabaseName: typo3
       typo3DatabaseHost: '127.0.0.1'
@@ -112,7 +118,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        typo3-version: ${{ fromJson(inputs.typo3-versions || '["11.5", "12.4", "13.4"]') }}
+        typo3-version: ${{ fromJson(inputs.typo3-versions || '["13.4", "14.3"]') }}
         database: ${{ fromJson(inputs.databases) }}
     services:
       database:

@@ -5,7 +5,7 @@ on:
     inputs:
       php-version:
         required: false
-        default: '8.2'
+        default: '8.5'
         type: string
 
 permissions: {}
@@ -30,7 +30,6 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
-          # @todo Use PHP 8.4 once PHP-CS-Fixer supports PHP 8.4
           php-version: ${{ inputs.php-version }}
           tools: composer:v2, composer-require-checker, composer-unused, cs2pr
         env:

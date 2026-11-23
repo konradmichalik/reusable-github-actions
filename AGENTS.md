@@ -8,7 +8,7 @@ The repository is a stability contract for its consumers. Read `docs/stability.m
 
 ## Structure
 
-- `.github/workflows/`: the reusable workflows (`cgl.yml`, `cgl-test.yml`, `tests.yml` deprecated, `tests-php.yml`, `tests-typo3.yml`, `release.yml`, `release-typo3.yml`, `security.yml`, `scorecard.yml`, `pages.yml`) plus this repository's own `ci.yml` and `self-release.yml` (not callable by consumers)
+- `.github/workflows/`: the reusable workflows (`cgl.yml`, `cgl-test.yml`, `tests-php.yml`, `tests-typo3.yml`, `release.yml`, `release-typo3.yml`, `security.yml`, `scorecard.yml`, `pages.yml`) plus this repository's own `ci.yml` and `self-release.yml` (not callable by consumers)
 - `scripts/`: `check-relative-uses.py`, `pin-references.sh`, `find-consumers.sh`, `render-inventory.sh`
 - `docs/`: `stability.md` (versioning and pinning contract), `canary.md` (pre-release testing), `actions.md` (why a workflow cannot test itself), `inventory.md` (consumer inventory)
 - `zizmor.yml`: zizmor ignores, each tied to an open issue

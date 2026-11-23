@@ -87,19 +87,6 @@ $legacy
 SECTION
 fi
 
-deprecated=$(awk -F'\t' '{n=split($4,p,"/"); if (p[n]=="tests.yml") print "- `" $1 "`"}' "$rows" | sort -u)
-if [ -n "$deprecated" ]; then
-  cat <<SECTION
-
-## Deprecated \`tests.yml\` callers
-
-See #39. \`tests.yml\` is superseded by \`tests-typo3.yml\` and scheduled for removal
-in \`0.3.0\`. Migration is a one-line change of the \`uses:\` path.
-
-$deprecated
-SECTION
-fi
-
 cat <<'SECTION'
 
 ## Full detail

@@ -5,7 +5,7 @@ on:
     inputs:
       php-version:
         required: false
-        default: '8.2'
+        default: '8.5'
         type: string
       sca-typo3-version:
         description: 'Additional TYPO3 version to run static analysis against, e.g. "14.3". The cgl job analyses the locked one. Empty skips the job'
@@ -16,6 +16,11 @@ on:
         description: 'cgl target for the additional static analysis, e.g. a script that loads a version-specific PHPStan config'
         required: false
         default: 'sca:php'
+        type: string
+      extra-lint-scripts:
+        description: 'Additional lint scripts from Tests/CGL/composer.json as JSON array, run as "composer cgl <script>" after the built-in linters, e.g. ["lint:language"]'
+        required: false
+        default: '[]'
         type: string
 
 permissions: {}
@@ -40,9 +45,8 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
-          # @todo Use PHP 8.4 once PHP-CS-Fixer supports PHP 8.4
           php-version: ${{ inputs.php-version }}
-          tools: composer:v2, composer-require-checker, composer-unused, cs2pr
+          tools: composer:v2, cs2pr
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -51,23 +55,12 @@ jobs:
         run: composer validate
 
       # Install dependencies
-      - name: Add required packages
-        run: composer require composer/composer:"^2.2"
-
-      # Check Composer dependencies
-      - name: Check dependencies
-        run: composer-require-checker check
-      - name: Reset composer.json
-        run: |
-          if git ls-files --error-unmatch composer.lock >/dev/null 2>&1; then
-            git checkout composer.json composer.lock
-          else
-            git checkout composer.json
-          fi
-      - name: Re-install Composer dependencies
+      - name: Install Composer dependencies
         uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
-      - name: Check for unused dependencies
-        run: composer-unused
+
+      # Check Composer dependencies, the analyser version comes from Tests/CGL/composer.lock
+      - name: Check dependencies
+        run: composer cgl analyze
 
       # Linting
       - name: Refresh composer.lock hash
@@ -78,6 +71,14 @@ jobs:
         run: composer cgl lint:editorconfig
       - name: Lint PHP
         run: composer cgl lint:php -- --format checkstyle | cs2pr
+      - name: Run additional lint scripts
+        shell: bash
+        run: |
+          printf '%s' "$EXTRA_LINT_SCRIPTS" | jq -r '.[]' | while IFS= read -r script; do
+            composer cgl "$script" </dev/null
+          done
+        env:
+          EXTRA_LINT_SCRIPTS: ${{ inputs.extra-lint-scripts }}
 
       # SCA
       - name: SCA PHP
