@@ -3,7 +3,7 @@
 # Reusable GitHub Actions
 
 [![License](https://img.shields.io/github/license/konradmichalik/reusable-github-actions)](LICENSE)
-[![Workflows](https://img.shields.io/badge/workflows-11-green)]()
+[![Workflows](https://img.shields.io/badge/workflows-10-green)]()
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/konradmichalik/reusable-github-actions/badge)](https://securityscorecards.dev/viewer/?uri=github.com/konradmichalik/reusable-github-actions)
 
 </div>
@@ -36,7 +36,6 @@ Two consequences worth stating plainly, so nobody has to infer them:
 - [CGL (Test)](#cgl-test)
 - [Tests](#tests)
 - [Tests TYPO3](#tests-typo3)
-- [Tests (deprecated)](#tests-deprecated)
 - [Mutation](#mutation)
 - [Release](#release)
 - [Release TYPO3](#release-typo3)
@@ -170,7 +169,7 @@ block in the caller:
 | `security.yml` | the workflow | yes |
 | `scorecard.yml` | the workflow | no — a run publishes to the OpenSSF results API |
 | `release.yml`, `release-typo3.yml` | the workflow | no — see below |
-| `tests-php.yml`, `tests-typo3.yml`, `tests.yml` | **the caller** | up to you |
+| `tests-php.yml`, `tests-typo3.yml` | **the caller** | up to you |
 
 Releases are never cancelled mid-flight. `release-typo3.yml` spreads artefact build,
 GitHub release and `tailor ter:publish` across three jobs, and a cancellation between
@@ -449,28 +448,6 @@ contribution red.
 > run today regardless: Code Climate's coverage API was shut down on 2025-07-18 and
 > the product moved to Qlty. The step has been removed. If you set that secret on a
 > repository, it is inert and can be deleted.
-
-## Tests (deprecated)
-
-> [!WARNING]
-> `tests.yml` is **deprecated** and will be **removed in 0.3.0**. It is superseded by
-> [Tests TYPO3](#tests-typo3). It is documented here only so its remaining callers can
-> find the migration path — do not adopt it for anything new.
-
-Migration is a one-line change in your caller:
-
-```diff
- jobs:
-     tests:
--        uses: konradmichalik/reusable-github-actions/.github/workflows/tests.yml@<ref>
-+        uses: konradmichalik/reusable-github-actions/.github/workflows/tests-typo3.yml@<ref>
-```
-
-Nothing else changes. The two workflows take identical inputs, and their job names are
-identical too, so composed check-run names stay the same and any branch protection rule
-referencing them keeps matching.
-
-Runs of `tests.yml` emit a warning annotation and a job-summary notice pointing here.
 
 ## Mutation
 
