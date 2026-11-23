@@ -222,11 +222,11 @@ jobs:
 
 Input|Type| Required |Description
 -|-|----------|-
-`php-version`|input| false    |PHP version to use for the CGL check. Defaults to `8.3`.
+`php-version`|input| false    |PHP version to use for the CGL check. Defaults to `8.5`.
 
 ## CGL (Test)
 
-Comprehensive code quality workflow that validates composer dependencies, runs linting (PHP, composer.json, editorconfig), performs static code analysis and checks rector migrations.
+Comprehensive code quality workflow that validates composer dependencies (`composer cgl analyze`), runs linting (PHP, composer.json, editorconfig), performs static code analysis and checks rector migrations.
 
 ```yaml
 name: CGL
@@ -242,9 +242,19 @@ jobs:
 
 Input|Type| Required |Description
 -|-|----------|-
-`php-version`|input| false    |PHP version to use for the CGL check. Defaults to `8.3`.
-`sca-typo3-version`|input| false    |Additional TYPO3 version to run static analysis against, for example `14.3`. Empty (default) skips the job.
+`php-version`|input| false    |PHP version to use for the CGL check. Defaults to `8.5`.
+`sca-typo3-version`|input| false    |Additional TYPO3 version to run static analysis against, for example `14.3`. Empty (default) skips the job. Recommended for extensions that support two TYPO3 majors.
 `sca-typo3-script`|input| false    |`cgl` target that job runs. Defaults to `sca:php`.
+`extra-lint-scripts`|input| false    |JSON array of additional lint scripts from `Tests/CGL/composer.json`, run as `composer cgl <script>` after the built-in linters. Defaults to `[]`.
+
+The dependency check runs `composer cgl analyze`, so `Tests/CGL` has to define an `analyze` script
+(for example with `shipmonk/composer-dependency-analyser`). `composer-require-checker.json` and
+`composer-unused.php` in the repository root are no longer read and can be deleted.
+
+```yaml
+with:
+    extra-lint-scripts: '["lint:language"]'
+```
 
 ### Static analysis against a second TYPO3 version
 
@@ -303,8 +313,9 @@ jobs:
 
 Input|Type| Required |Description
 -|-|----------|-
-`php-versions`|input| false    |PHP versions as JSON array. Defaults to `["8.2", "8.3", "8.4"]`.
-`typo3-versions`|input| false    |TYPO3 versions as JSON array. Defaults to `["11.5", "12.4", "13.4"]`.
+`php-versions`|input| false    |PHP versions as JSON array. Defaults to `["8.2", "8.3", "8.4", "8.5"]`.
+`typo3-versions`|input| false    |TYPO3 versions as JSON array. Defaults to `["13.4", "14.3"]`. Each entry is installed as `typo3/cms-core:^<entry>`, see below.
+`exclude`|input| false    |Matrix combinations to skip in the main matrix (not in the database job) as JSON array of objects with the keys `php-version`, `typo3-version` and `dependencies`. Defaults to `[]`.
 `dependencies`|input| false    |Dependencies as JSON array. Defaults to `["highest", "lowest"]`.
 `coverage-dir`|input| false    |Directory your `test:coverage` script writes `clover.xml` to. Defaults to `.Build/coverage`.
 `coveralls`|input| false    |Upload coverage to Coveralls. Defaults to `true`.
@@ -324,10 +335,32 @@ jobs:
     tests:
         uses: konradmichalik/reusable-github-actions/.github/workflows/tests-typo3.yml@main
         with:
-            php-versions: '["8.2", "8.3", "8.4"]'
-            typo3-versions: '["11.5", "12.4", "13.4"]'
+            php-versions: '["8.2", "8.3", "8.4", "8.5"]'
+            typo3-versions: '["13.4", "14.3"]'
             dependencies: '["highest", "lowest"]'
 ```
+
+### How `typo3-versions` resolves
+
+Each entry is installed with `--with=typo3/cms-core:"^<entry>"`. With `highest`
+dependencies `"14.0"` and `"14.3"` therefore install the same release, so listing both
+runs identical jobs. A second minor of the same major only adds coverage in the `lowest`
+jobs. List one entry per major unless you need that.
+
+`exclude` removes combinations the matrix cannot run, for example a PHP version a TYPO3
+major does not support:
+
+```yaml
+with:
+    exclude: '[{"php-version": "8.6", "typo3-version": "12.4"}]'
+```
+
+### What `composer test` has to cover
+
+The matrix runs `composer test` in every job. The workflow does not pick PHPUnit suites,
+so `composer test` has to run all of them, unit and functional. A functional suite that
+only a separate script runs is executed nowhere in the matrix. `databases` is an
+addition for real MySQL/MariaDB servers, not a replacement for this.
 
 ### Functional tests against MySQL and MariaDB
 
@@ -349,7 +382,7 @@ immutable; the workflow cannot pin what the caller chooses.
 
 ### Testing TYPO3 12.4 requires an audit setting
 
-If your matrix includes TYPO3 **12.4** — which the default `typo3-versions` does —
+If your matrix includes TYPO3 **12.4** (the defaults no longer do, you have to set `typo3-versions`)
 your repository needs this in its own `composer.json`:
 
 ```json
