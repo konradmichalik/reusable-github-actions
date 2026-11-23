@@ -72,6 +72,7 @@ jobs:
       - name: Lint PHP
         run: composer cgl lint:php -- --format checkstyle | cs2pr
       - name: Run additional lint scripts
+        shell: bash
         run: |
           printf '%s' "$EXTRA_LINT_SCRIPTS" | jq -r '.[]' | while IFS= read -r script; do
             composer cgl "$script" </dev/null
